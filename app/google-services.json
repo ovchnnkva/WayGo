@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "363239095642",
+    "firebase_url": "https://studentsystemapp-default-rtdb.firebaseio.com",
+    "project_id": "studentsystemapp",
+    "storage_bucket": "studentsystemapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:363239095642:android:91c4ae3f06a449cbe90763",
+        "android_client_info": {
+          "package_name": "ru.project.waygo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTQ0PHbTgmLayGOR0VLsGz8pQWNY4AhU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:363239095642:android:affe526abfa2a158e90763",
+        "android_client_info": {
+          "package_name": "ru.sfedu.studentsystem"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "363239095642-okmhs2g10oq4egc0emo937b8tp3q2kd7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "ru.sfedu.studentsystem",
+            "certificate_hash": "863e8aa93d9f5d0c634fd20826d594cba2fe3e26"
+          }
+        },
+        {
+          "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTQ0PHbTgmLayGOR0VLsGz8pQWNY4AhU4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

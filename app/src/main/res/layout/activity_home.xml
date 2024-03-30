@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_app"
+    tools:context=".main.HomeActivity">
+
+    <EditText
+        android:id="@+id/edit_search_location"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/text_field_background"
+        android:drawableLeft="@drawable/search_icon"
+        android:drawablePadding="5dp"
+        android:hint="@string/search"
+        android:paddingLeft="15dp"
+        android:textColorHint="@color/text_gray"
+        android:textSize="16sp"
+        app:backgroundTint="@color/background_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.07"
+        app:layout_constraintHorizontal_bias="0.484"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintWidth_percent="0.93"
+        app:navigationIconTint="@color/text_gray"
+        app:titleTextColor="@color/text_gray" />
+
+<!--    <ListView-->
+<!--        android:id="@+id/location_list"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="0dp"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHeight_percent="0.90"-->
+<!--        app:layout_constraintHorizontal_bias="0.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/textView2"-->
+<!--        app:layout_constraintVertical_bias="0.0" />-->
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/location_container"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:foregroundGravity="center"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.65"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tab_layout" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:drawableLeft="@drawable/country_icon"
+        android:drawablePadding="5dp"
+        android:text="@string/test_country"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.059"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_app"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edit_search_location"
+        app:tabIndicator="@drawable/tab_indicator"
+        app:tabIndicatorColor="@color/app_theme"
+        app:tabIndicatorGravity="bottom"
+        app:tabRippleColor="@color/background_app"
+        app:tabSelectedTextColor="@color/app_theme"
+        app:tabTextColor="@color/text_gray">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tap_route"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/background_app"
+            android:text="@string/excursions"
+            tools:layout_editor_absoluteX="3dp"
+            tools:layout_editor_absoluteY="129dp" />
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/tab_point"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/background_app"
+            android:backgroundTint="@color/background_app"
+            android:text="@string/dots" />
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@color/background_app"
+        android:foregroundTint="@color/background_app"
+        app:backgroundTint="@color/background_app"
+        app:itemActiveIndicatorStyle="@android:color/transparent"
+        app:itemBackground="@color/background_app"
+        app:itemIconTint="@drawable/navigation_item_selector"
+        app:itemPaddingTop="25dp"
+        app:itemRippleColor="@color/background_app"
+        app:itemTextColor="@drawable/navigation_item_selector"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/location_container"
+        app:menu="@menu/navigation_items" />
+
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

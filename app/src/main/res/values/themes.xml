@@ -1,0 +1,11 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.WayGO" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="color">@color/background_app</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:colorPrimary"> @color/app_theme</item>
+        <item name="android:navigationBarColor">@color/app_theme</item>
+        <item name="android:textColor">@color/text_gray</item>
+        <item name="android:textColorHint">@color/text_gray</item>
+    </style>
+</resources>
