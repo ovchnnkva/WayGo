@@ -1,13 +1,16 @@
 package ru.project.waygo.main;
 
-import android.graphics.Bitmap;
+import static ru.project.utils.Base64Util.stringToByte;
+import static ru.project.utils.CacheUtils.cacheFiles;
+import static ru.project.utils.CacheUtils.getFileName;
+import static ru.project.utils.CacheUtils.isExistsCache;
+
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -21,7 +24,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.search.SearchView;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -139,7 +141,6 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
         return fragments;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private List<LocationFragment> convertToPointFragments(List<PointDTO> points) {
         return points.stream()
                .map(LocationFragment::new)
@@ -150,11 +151,11 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
         PointService pointService = retrofit.createService(PointService.class);
         Call<List<PointDTO>> call = pointService.getByCity("Ростов-на-Дону");
         call.enqueue(new Callback<List<PointDTO>>() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
                 if(response.isSuccessful()) {
                     points.addAll(response.body());
+                    points.forEach(point -> cachePointImages(point.getPhotos(), point.getId()));
                     locationFragments = convertToPointFragments(points);
                     fillRecyclePoint(locationFragments);
                 } else {
@@ -167,7 +168,10 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 Log.i("POINT", "onFailure " + t.getLocalizedMessage());
             }
         });
+    }
 
+    private void cachePointImages(List<String> images, long pointId) {
+        cacheFiles(HomeActivity.this, getFileName("point", pointId), images);
     }
 
     @Override

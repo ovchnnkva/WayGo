@@ -21,6 +21,7 @@ import java.util.List;
 
 import ru.project.waygo.Constants;
 import ru.project.waygo.R;
+import ru.project.waygo.details.PointDetailsActivity;
 import ru.project.waygo.fragment.LocationFragment;
 import ru.project.waygo.map.MapBoxView;
 
@@ -34,7 +35,6 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
         this.context =  context;
         inflater = LayoutInflater.from(context);
     }
-
 
     @NonNull
     @Override
@@ -60,10 +60,13 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
         holder.favorite.setChecked(fragment.isFavorite());
 
         if(fragment.getTypeLocation().equals(Constants.TypeLocation.POINT)) {
-            Intent intent = new Intent(holder.itemView.getContext(), MapBoxView.class);
+//            Intent intent = new Intent(holder.itemView.getContext(), MapBoxView.class);
+            Intent intent = new Intent(holder.itemView.getContext(), PointDetailsActivity.class);
             intent.putExtra("id", fragment.getPointId());
-            intent.putExtra("longitude", fragment.getLongitude());
-            intent.putExtra("latitude", fragment.getLatitude());
+            intent.putExtra("name", fragment.getName());
+            intent.putExtra("description", fragment.getDescription());
+//            intent.putExtra("longitude", fragment.getLongitude());
+//            intent.putExtra("latitude", fragment.getLatitude());
 
             holder.gotoButton.setOnClickListener(e -> {
                 context.startActivity(intent);

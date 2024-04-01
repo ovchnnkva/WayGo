@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 
 public class BitMapUtils {
-    private static int count = 0;
     public static Bitmap getBitmapFromDrawable(Context context, int drawableId) {
         Drawable drawable = ContextCompat.getDrawable(context, drawableId);
 
