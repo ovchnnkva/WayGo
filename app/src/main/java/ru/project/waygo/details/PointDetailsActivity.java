@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -17,9 +18,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +37,7 @@ public class PointDetailsActivity extends AppCompatActivity {
 
     private TextView namePointField;
     private TextView descriptionField;
+    private ImageView generalImage;
 
     private long pointId;
     @Override
@@ -47,10 +51,18 @@ public class PointDetailsActivity extends AppCompatActivity {
             return insets;
         });
 
-        container = findViewById(R.id.photos_container);
         namePointField = findViewById(R.id.name_point);
         descriptionField = findViewById(R.id.descriprion_point);
+        generalImage = findViewById(R.id.image_point);
 
+        container = findViewById(R.id.photos_container);
+        container.setHasFixedSize(true);
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        container.setLayoutManager(linearLayoutManager);
+
+        container.setAdapter(new PointPhotosAdapter(PointDetailsActivity.this, new ArrayList<>()));
         fillFromIntent();
         fillRecycleFromCache();
     }
@@ -72,12 +84,15 @@ public class PointDetailsActivity extends AppCompatActivity {
                     .collect(Collectors.toList());
 
             fillRecycle(fragments);
+            if(!fragments.isEmpty()) {
+                generalImage.setImageBitmap(fragments.get(0).getImage());
+            }
         }
     }
 
     private void fillRecycle(List<PointPhotosFragment> fragments) {
         Log.i("POINT_DETAILS", "fillRecycle: count fragments " + fragments.size());
-        PointPhotosAdapter adapter = new PointPhotosAdapter(getApplicationContext(), fragments);
+        PointPhotosAdapter adapter = new PointPhotosAdapter(PointDetailsActivity.this, fragments);
         container.setAdapter(adapter);
     }
 }

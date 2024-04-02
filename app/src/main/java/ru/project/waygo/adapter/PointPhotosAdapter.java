@@ -1,6 +1,7 @@
 package ru.project.waygo.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,7 +21,7 @@ import ru.project.waygo.fragment.LocationFragment;
 import ru.project.waygo.fragment.PointPhotosFragment;
 
 public class PointPhotosAdapter extends RecyclerView.Adapter<PointPhotosAdapter.ViewHolder>{
-    private List<PointPhotosFragment> fragments = new ArrayList<>();
+    private final List<PointPhotosFragment> fragments;
     private final LayoutInflater inflater;
     private final Context context;
 
@@ -38,8 +39,9 @@ public class PointPhotosAdapter extends RecyclerView.Adapter<PointPhotosAdapter.
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PointPhotosAdapter.ViewHolder holder, int position) {
         PointPhotosFragment fragment = fragments.get(position);
+        Log.i("POINT_ADAPTER", "onBindViewHolder: image != null " + (fragment.getImage() != null));
         holder.image.setImageBitmap(fragment.getImage());
     }
 
@@ -52,7 +54,7 @@ public class PointPhotosAdapter extends RecyclerView.Adapter<PointPhotosAdapter.
         final ImageView image;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            image = itemView.findViewById(R.id.image);
+            image = itemView.findViewById(R.id.image_location);
         }
     }
 }

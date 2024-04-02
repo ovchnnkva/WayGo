@@ -2,36 +2,41 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="360dp"
-    android:layout_height="290dp"
-    android:background="@color/background_app"
+    android:layout_width="160dp"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
     tools:context=".fragment.LocationFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/background"
-        android:layout_width="343dp"
-        android:layout_height="282dp"
-        android:background="@drawable/substrate_fragment"
+    <ImageView
+        android:id="@+id/image_location"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:background="@drawable/image_small_background"
+        android:clipToOutline="true"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
+        android:src="@drawable/location_test"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.529"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintVertical_bias="0.0" />
 
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="450dp"
-            android:layout_height="300dp"
-            android:background="@color/background_app"
-            android:clipToOutline="true"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/location_test"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="145dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/test_location_name"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/image_location"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

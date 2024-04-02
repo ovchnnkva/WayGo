@@ -18,7 +18,7 @@ public class CacheUtils {
 
         String filesBytes = String.join(";", bytes);
         try {
-            file.mkdirs();
+            file.createNewFile();
             FileOutputStream outputStream = new FileOutputStream(file);
             outputStream.write(filesBytes.getBytes());
             outputStream.close();

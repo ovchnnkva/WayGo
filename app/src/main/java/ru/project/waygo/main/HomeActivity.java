@@ -84,17 +84,18 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(locationSearch.getText() == null || locationSearch.getText().toString().isBlank())
+                if (locationSearch.getText() == null || locationSearch.getText().toString().isBlank()) {
                     fillRecyclePoint(locationFragments);
-
-                fillRecyclePoint(locationFragments
-                        .stream()
-                        .filter(location -> location.getName()
-                                .toLowerCase()
-                                .contains(locationSearch.getText()
-                                        .toString()
-                                        .toLowerCase()))
-                        .collect(Collectors.toList()));
+                } else {
+                        fillRecyclePoint(locationFragments
+                                .stream()
+                                .filter(location -> location.getName()
+                                        .toLowerCase()
+                                        .contains(locationSearch.getText()
+                                                .toString()
+                                                .toLowerCase()))
+                                .collect(Collectors.toList()));
+                    }
             }
 
             @Override
@@ -195,6 +196,6 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
-        recyclerView.setAdapter(null);
+        recyclerView.setAdapter(new LocationAdapter(HomeActivity.this, new ArrayList<>()));
     }
 }
