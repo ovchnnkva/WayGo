@@ -7,11 +7,11 @@ import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getRoutesFromExtra;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,13 +23,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import ru.project.waygo.R;
-import ru.project.waygo.adapter.PointPhotosAdapter;
+import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.RoutePhotosFragment;
 
@@ -40,7 +38,7 @@ public class PointDetailsActivity extends AppCompatActivity {
     private TextView namePointField;
     private TextView descriptionField;
     private ImageView generalImage;
-
+    private ToggleButton favorite;
     private long pointId;
     private List<RouteDTO> routesWithPoint = new ArrayList<>();
     @Override
@@ -57,6 +55,7 @@ public class PointDetailsActivity extends AppCompatActivity {
         namePointField = findViewById(R.id.name_point);
         descriptionField = findViewById(R.id.descriprion_point);
         generalImage = findViewById(R.id.image_point);
+        favorite = findViewById(R.id.toggle_favorite);
 
         container = findViewById(R.id.photos_container);
         container.setHasFixedSize(true);
@@ -65,7 +64,7 @@ public class PointDetailsActivity extends AppCompatActivity {
         linearLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
         container.setLayoutManager(linearLayoutManager);
 
-        container.setAdapter(new PointPhotosAdapter(PointDetailsActivity.this, new ArrayList<>()));
+        container.setAdapter(new RoutePhotosAdapter(PointDetailsActivity.this, new ArrayList<>()));
         fillFromIntent();
         fillRecycleFromCache();
     }
@@ -75,6 +74,7 @@ public class PointDetailsActivity extends AppCompatActivity {
         namePointField.setText(intent.getStringExtra("name"));
         descriptionField.setText(intent.getStringExtra("description"));
         pointId = intent.getLongExtra("id", 0);
+        favorite.setChecked(intent.getBooleanExtra("favorite", false));
         routesWithPoint = getRoutesFromExtra(
                 Objects.requireNonNullElse(intent.getStringExtra("routes"), "")
         );
@@ -107,7 +107,7 @@ public class PointDetailsActivity extends AppCompatActivity {
 
     private void fillRecycle(List<RoutePhotosFragment> fragments) {
         Log.i("POINT_DETAILS", "fillRecycle: count fragments " + fragments.size());
-        PointPhotosAdapter adapter = new PointPhotosAdapter(PointDetailsActivity.this, fragments);
+        RoutePhotosAdapter adapter = new RoutePhotosAdapter(PointDetailsActivity.this, fragments);
         container.setAdapter(adapter);
     }
 }

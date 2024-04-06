@@ -21,6 +21,7 @@ import java.util.List;
 import ru.project.waygo.Constants;
 import ru.project.waygo.R;
 import ru.project.waygo.details.PointDetailsActivity;
+import ru.project.waygo.details.RouteDetailsActivity;
 import ru.project.waygo.fragment.LocationFragment;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder>{
@@ -61,7 +62,20 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             intent.putExtra("id", fragment.getLocationId());
             intent.putExtra("name", fragment.getName());
             intent.putExtra("description", fragment.getDescription());
+            intent.putExtra("favorite", fragment.isFavorite());
             intent.putExtra("routes", fragment.getExtra());
+
+            holder.gotoButton.setOnClickListener(e -> {
+                context.startActivity(intent);
+            });
+        } else {
+            Intent intent = new Intent(holder.itemView.getContext(), RouteDetailsActivity.class);
+            intent.putExtra("id", fragment.getLocationId());
+            intent.putExtra("name", fragment.getName());
+            intent.putExtra("description", fragment.getDescription());
+            intent.putExtra("favorite", fragment.isFavorite());
+            intent.putExtra("length", fragment.getRouteLength());
+            intent.putExtra("points", fragment.getExtra());
 
             holder.gotoButton.setOnClickListener(e -> {
                 context.startActivity(intent);

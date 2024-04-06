@@ -8,6 +8,22 @@
     tools:context=".details.RouteDetailsActivity">
 
 
+    <TextView
+        android:id="@+id/route_length"
+        android:layout_width="87dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="210dp"
+        android:background="@drawable/route_length_background"
+        android:drawableLeft="@drawable/route_icon"
+        android:gravity="center"
+        android:text="@string/test_route_length"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.947"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.smarteist.autoimageslider.SliderView
         android:id="@+id/slider"
         android:layout_width="match_parent"
@@ -29,14 +45,32 @@
         app:sliderIndicatorRadius="2dp"
         app:sliderIndicatorSelectedColor="#FFFFFF"
         app:sliderIndicatorUnselectedColor="@color/stroke_gray"
-        app:sliderScrollTimeInSec="3" />
+        app:sliderScrollTimeInSec="3" >
+
+    </com.smarteist.autoimageslider.SliderView>
+
+    <ToggleButton
+        android:id="@+id/toggle_favorite"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginBottom="156dp"
+        android:background="@drawable/toggle_favorites"
+        android:textOff="@null"
+        android:textOn="@null"
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.952"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.258" />
 
     <ScrollView
+        android:id="@+id/scrollView2"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
         android:layout_marginTop="256dp"
         android:background="@drawable/substrate_login"
+        android:fillViewport="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/slider">
@@ -51,6 +85,7 @@
                 android:id="@+id/go_to_excursion"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/button_style_app_theme"
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center_horizontal|center_vertical"
@@ -64,8 +99,8 @@
                 app:layout_constraintHeight_percent="0.09"
                 app:layout_constraintHorizontal_bias="0.485"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/photos_container"
-                app:layout_constraintVertical_bias="0.418"
+                app:layout_constraintTop_toBottomOf="@+id/points_container"
+                app:layout_constraintVertical_bias="0.589"
                 app:layout_constraintWidth_percent="0.91" />
 
             <TextView
@@ -73,17 +108,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                android:text="@string/excursions"
+                android:text="@string/attractions"
                 android:textColor="#000000"
                 android:textSize="19sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.055"
+                app:layout_constraintHorizontal_bias="0.106"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/descriprion_point" />
+                app:layout_constraintTop_toBottomOf="@+id/descriprion_route" />
 
             <TextView
-                android:id="@+id/name_point"
+                android:id="@+id/name_route"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -97,7 +132,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/descriprion_point"
+                android:id="@+id/descriprion_route"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -106,11 +141,11 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.421"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/name_point"
+                app:layout_constraintTop_toBottomOf="@+id/name_route"
                 app:layout_constraintWidth_percent="0.90" />
 
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/photos_container"
+                android:id="@+id/points_container"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"

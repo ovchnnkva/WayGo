@@ -58,14 +58,14 @@ public class LocationFragment extends Fragment {
         this.extra = routeExtra;
     }
 
-    public LocationFragment(RouteDTO routeDTO) {
+    public LocationFragment(RouteDTO routeDTO, String pointExtra) {
         this.locationId = routeDTO.getId();
         this.name = routeDTO.getRouteName();
         this.routeLength = routeDTO.getLength() + " км";
         this.description = routeDTO.getDescription();
         this.typeLocation =TypeLocation.ROUTE;
         this.points = routeDTO.getStopsOnRoute();
-
+        this.extra = pointExtra;
         routeDTO.getStopsOnRoute()
                 .forEach(point -> images.add(getBitmapFromBytes(stringToByte(point.getPhoto()))));
 

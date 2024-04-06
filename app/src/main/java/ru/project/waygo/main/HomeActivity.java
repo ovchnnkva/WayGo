@@ -2,6 +2,7 @@ package ru.project.waygo.main;
 
 import static ru.project.utils.CacheUtils.cacheFiles;
 import static ru.project.utils.CacheUtils.getFileName;
+import static ru.project.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.utils.IntentExtraUtils.getRoutesExtra;
 
 import android.graphics.BitmapFactory;
@@ -227,7 +228,7 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         cacheImages(generalPoint.getPhoto(), route.getId(), "route");
                     });
                     currentRoutes = routes.stream()
-                            .map(LocationFragment::new)
+                            .map(route -> new LocationFragment(route, getPointsExtra(route.getStopsOnRoute())))
                             .collect(Collectors.toList());
                     fillRecyclePoint(currentRoutes);
                 } else {
