@@ -11,7 +11,7 @@ import ru.project.waygo.dto.route.RouteGradeDTO;
 import ru.project.waygo.dto.user.UserDTO;
 
 public interface UserService {
-    @GET("api/user/{pointId}")
+    @GET("api/user/{locationId}")
     Call<UserDTO> getById(@Path("id") long id);
 
     @POST("api/user/estimate")
@@ -24,7 +24,7 @@ public interface UserService {
     Call<Void> createCheckInOnPoint(@Query("userId") long userId, @Query("routeId") long routeId, @Query("dto") PointCheckInDTO dto);
 
     @POST("api/user/points/favorite")
-    Call<Void> createFavoritePoint(@Query("userId") long userId, @Query("pointId") long pointId);
+    Call<Void> createFavoritePoint(@Query("userId") long userId, @Query("locationId") long pointId);
 
     @POST("api/user")
     Call<Void> createUser(@Query("dto") UserDTO dto);

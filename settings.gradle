@@ -3,6 +3,7 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        jcenter()
     }
 }
 dependencyResolutionManagement {
@@ -10,6 +11,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        jcenter()
         maven {
             url 'https://api.mapbox.com/downloads/v2/releases/maven'
             authentication { basic(BasicAuthentication) }
@@ -19,6 +21,7 @@ dependencyResolutionManagement {
 
             }
         }
+        maven { url "https://jitpack.io" }
     }
 
 }

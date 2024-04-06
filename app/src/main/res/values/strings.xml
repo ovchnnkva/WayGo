@@ -27,4 +27,6 @@
         На этой прогулке мы поговорим об истории строительства, сложностях,
         которые возникли у архитекторов и о назначении каждого здания.</string>
     <string name="go_to_excursion">Начать экскурсию</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

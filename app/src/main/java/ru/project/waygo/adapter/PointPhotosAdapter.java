@@ -5,27 +5,23 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ru.project.waygo.R;
-import ru.project.waygo.fragment.LocationFragment;
-import ru.project.waygo.fragment.PointPhotosFragment;
+import ru.project.waygo.fragment.RoutePhotosFragment;
 
 public class PointPhotosAdapter extends RecyclerView.Adapter<PointPhotosAdapter.ViewHolder>{
-    private final List<PointPhotosFragment> fragments;
+    private final List<RoutePhotosFragment> fragments;
     private final LayoutInflater inflater;
     private final Context context;
 
-    public PointPhotosAdapter(Context context, List<PointPhotosFragment> fragments){
+    public PointPhotosAdapter(Context context, List<RoutePhotosFragment> fragments){
         this.fragments = fragments;
         this.context =  context;
         inflater = LayoutInflater.from(context);
@@ -40,9 +36,9 @@ public class PointPhotosAdapter extends RecyclerView.Adapter<PointPhotosAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull PointPhotosAdapter.ViewHolder holder, int position) {
-        PointPhotosFragment fragment = fragments.get(position);
-        Log.i("POINT_ADAPTER", "onBindViewHolder: image != null " + (fragment.getImage() != null));
+        RoutePhotosFragment fragment = fragments.get(position);
         holder.image.setImageBitmap(fragment.getImage());
+        holder.name.setText(fragment.getName());
     }
 
     @Override
@@ -52,9 +48,11 @@ public class PointPhotosAdapter extends RecyclerView.Adapter<PointPhotosAdapter.
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
         final ImageView image;
+        final TextView name;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             image = itemView.findViewById(R.id.image_location);
+            name = itemView.findViewById(R.id.name);
         }
     }
 }

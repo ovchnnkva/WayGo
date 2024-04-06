@@ -15,7 +15,7 @@ public interface PointService {
     @GET("api/point/all")
     Call<List<PointDTO>> getByCity(@Query("city") String city);
 
-    @GET("api/point/{pointId}")
+    @GET("api/point/{locationId}")
     Call<PointDTO> getById(@Path("id") Long id);
 
     @GET("api/point")

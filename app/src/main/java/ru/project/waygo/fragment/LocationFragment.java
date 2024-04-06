@@ -4,21 +4,18 @@ import static ru.project.utils.Base64Util.stringToByte;
 import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.project.utils.BitMapUtils;
 import ru.project.waygo.Constants.TypeLocation;
-import ru.project.waygo.R;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.dto.route.RouteDTO;
 
@@ -26,9 +23,9 @@ import ru.project.waygo.dto.route.RouteDTO;
 @Getter
 public class LocationFragment extends Fragment {
 
-    private long pointId;
+    private long locationId;
 
-    private List<Bitmap> image;
+    private List<Bitmap> images = new ArrayList<>();
 
     private String name;
 
@@ -43,32 +40,35 @@ public class LocationFragment extends Fragment {
     private double latitude;
 
     private TypeLocation typeLocation= TypeLocation.POINT;
+    private List<PointDTO> points;
+    private String imageName;
+    private String extra;
 
     public LocationFragment() {
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    public LocationFragment(PointDTO pointDTO) {
-        this.pointId = pointDTO.getId();
+    public LocationFragment(PointDTO pointDTO, String routeExtra) {
+        this.locationId = pointDTO.getId();
         this.name = pointDTO.getPointName();
         this.longitude = pointDTO.getLongitude();
         this.latitude = pointDTO.getLatitude();
         this.description = pointDTO.getDescription();
         this.typeLocation = TypeLocation.POINT;
-        this.image = pointDTO
-                    .getPhotos()
-                    .stream()
-                    .map(image ->
-                        getBitmapFromBytes(stringToByte(image)))
-                    .collect(Collectors.toList());
+        this.images.add(getBitmapFromBytes(stringToByte(pointDTO.getPhoto())));
+        this.extra = routeExtra;
     }
 
     public LocationFragment(RouteDTO routeDTO) {
-        this.pointId = routeDTO.getId();
+        this.locationId = routeDTO.getId();
         this.name = routeDTO.getRouteName();
         this.routeLength = routeDTO.getLength() + " км";
         this.description = routeDTO.getDescription();
         this.typeLocation =TypeLocation.ROUTE;
+        this.points = routeDTO.getStopsOnRoute();
+
+        routeDTO.getStopsOnRoute()
+                .forEach(point -> images.add(getBitmapFromBytes(stringToByte(point.getPhoto()))));
+
     }
 
     public void setRouteLength(String routeLength) {

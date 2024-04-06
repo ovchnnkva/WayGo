@@ -10,17 +10,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CacheUtils {
-    public static void cacheFiles(Context context, String fileName, List<String> bytes) {
+    public static void cacheFiles(Context context, String fileName, String bytes) {
         if(bytes == null || bytes.isEmpty()) return;
 
         File cacheDir = context.getCacheDir();
         File file = new File(cacheDir, fileName + ".txt");
 
-        String filesBytes = String.join(";", bytes);
         try {
             file.createNewFile();
             FileOutputStream outputStream = new FileOutputStream(file);
-            outputStream.write(filesBytes.getBytes());
+            outputStream.write(bytes.getBytes());
             outputStream.close();
             Log.i("CACHE_SAVE", "cacheFiles: cache save with file name " + fileName);
         } catch (Exception e) {
@@ -38,7 +37,7 @@ public class CacheUtils {
 
             inputStream.read(buffer);
             inputStream.close();
-            Log.i("CACHE_GET", "getFileCache: cache find");
+            Log.i("CACHE_GET", "getFileCache: cache find with file name " + fileName);
             return buffer;
         } catch (Exception e) {
             Log.e("CACHE_GET", "cacheFiles: fail cache " + e.getLocalizedMessage());

@@ -4,7 +4,6 @@ import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +22,6 @@ import ru.project.waygo.Constants;
 import ru.project.waygo.R;
 import ru.project.waygo.details.PointDetailsActivity;
 import ru.project.waygo.fragment.LocationFragment;
-import ru.project.waygo.map.MapBoxView;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder>{
     private final LayoutInflater inflater;
@@ -52,21 +50,18 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
                 ? View.VISIBLE
                 : View.INVISIBLE);
         holder.routeLength.setText(fragment.getRouteLength());
-        Log.i("ADAPTER", "onBindViewHolder: PHOTOS SIZE " + fragment.getImage().size());
-        holder.image.setImageBitmap(fragment.getImage() != null
-                        && !fragment.getImage().isEmpty()
-                        ? fragment.getImage().get(0)
+        holder.image.setImageBitmap(fragment.getImages() != null
+                        && !fragment.getImages().isEmpty()
+                        ? fragment.getImages().get(0)
                         : getBitmapFromDrawable(context, R.drawable.location_test));
         holder.favorite.setChecked(fragment.isFavorite());
 
         if(fragment.getTypeLocation().equals(Constants.TypeLocation.POINT)) {
-//            Intent intent = new Intent(holder.itemView.getContext(), MapBoxView.class);
             Intent intent = new Intent(holder.itemView.getContext(), PointDetailsActivity.class);
-            intent.putExtra("id", fragment.getPointId());
+            intent.putExtra("id", fragment.getLocationId());
             intent.putExtra("name", fragment.getName());
             intent.putExtra("description", fragment.getDescription());
-//            intent.putExtra("longitude", fragment.getLongitude());
-//            intent.putExtra("latitude", fragment.getLatitude());
+            intent.putExtra("routes", fragment.getExtra());
 
             holder.gotoButton.setOnClickListener(e -> {
                 context.startActivity(intent);

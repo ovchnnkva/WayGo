@@ -1,23 +1,23 @@
 package ru.project.waygo.main;
 
-import static ru.project.utils.Base64Util.stringToByte;
 import static ru.project.utils.CacheUtils.cacheFiles;
 import static ru.project.utils.CacheUtils.getFileName;
-import static ru.project.utils.CacheUtils.isExistsCache;
+import static ru.project.utils.IntentExtraUtils.getRoutesExtra;
 
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -27,7 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import retrofit2.Call;
@@ -37,9 +39,12 @@ import ru.project.waygo.Constants;
 import ru.project.waygo.R;
 import ru.project.waygo.adapter.LocationAdapter;
 import ru.project.waygo.dto.point.PointDTO;
+import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.LocationFragment;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
+import ru.project.waygo.retrofit.services.CityService;
 import ru.project.waygo.retrofit.services.PointService;
+import ru.project.waygo.retrofit.services.RouteService;
 
 public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
 
@@ -52,7 +57,12 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
     private ListView cityListView;
     private EditText locationSearch;
 
-    private List<LocationFragment> locationFragments;
+    private EditText citySearch;
+
+    private ArrayAdapter<String> cityAdapter;
+    private String cityCurrent;
+    private List<LocationFragment> currentRoutes = new ArrayList<>();
+    private boolean isExcursion = true;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +78,16 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
         tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setOnTabSelectedListener(this);
         locationSearch = findViewById(R.id.edit_search_location);
+        cityListView = findViewById(R.id.city_container);
+        citySearch = findViewById(R.id.search_country);
 
         retrofit = new RetrofitConfiguration();
 
-        fillRecycleRoute();
+        cityCurrent = citySearch.getText() != null
+                ? citySearch.getText().toString()
+                : "";
+
+        getExcursions();
         setListeners();
     }
 
@@ -84,18 +100,15 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                List<LocationFragment> locationFragments = isExcursion
+                        ? currentRoutes
+                        : getPointsFromExcursion();
+
                 if (locationSearch.getText() == null || locationSearch.getText().toString().isBlank()) {
                     fillRecyclePoint(locationFragments);
                 } else {
-                        fillRecyclePoint(locationFragments
-                                .stream()
-                                .filter(location -> location.getName()
-                                        .toLowerCase()
-                                        .contains(locationSearch.getText()
-                                                .toString()
-                                                .toLowerCase()))
-                                .collect(Collectors.toList()));
-                    }
+                    fillRecyclePoint(filterLocation(locationFragments));
+                }
             }
 
             @Override
@@ -103,12 +116,51 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
             }
         });
+
+        citySearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                getCities(citySearch.getText().toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        citySearch.setOnClickListener(e -> getCities(citySearch.getText().toString()));
+        citySearch.setOnFocusChangeListener((view, hasFocus) -> {
+                if(!hasFocus) citySearch.setText(cityCurrent);
+        });
+        cityListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                cityCurrent = (String) adapterView.getItemAtPosition(i);
+                citySearch.setText(cityCurrent);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 
-    private void fillRecycleRoute() {
-        locationFragments = getFragments();
-        LocationAdapter adapter = new LocationAdapter(HomeActivity.this, locationFragments);
-        recyclerView.setAdapter(adapter);
+    private List<LocationFragment> filterLocation(List<LocationFragment> locationFragments) {
+        return locationFragments
+                .stream()
+                .filter(location -> location.getName()
+                        .toLowerCase()
+                        .contains(locationSearch.getText()
+                                .toString()
+                                .toLowerCase()))
+                .collect(Collectors.toList());
     }
 
     private void fillRecyclePoint(List<LocationFragment> fragments) {
@@ -116,49 +168,34 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
         recyclerView.setAdapter(adapter);
     }
 
-    private List<LocationFragment> getFragments() {
-        List<LocationFragment> fragments = new ArrayList<>();
+    private List<LocationFragment> getPointsFromExcursion() {
+        Set<PointDTO> points = new HashSet<>();
 
-        LocationFragment fragment = new LocationFragment();
-        fragment.setName("Сталинские высотки");
-        fragment.setDescription("Семь высотных зданий, строившихся в Москве в 1947—1957 годах.");
-        fragment.setFavorite(true);
-        fragment.setImage(List.of(BitmapFactory.decodeResource(getResources(), R.drawable.location_test)));
-        fragment.setTypeLocation(Constants.TypeLocation.ROUTE);
-        fragment.setRouteLength("3,2");
-
-        fragments.add(fragment);
-
-        LocationFragment fragment2 = new LocationFragment();
-        fragment2.setName("Сталинские высотки");
-        fragment2.setDescription("Семь высотных зданий, строившихся в Москве в 1947—1957 годах.");
-        fragment2.setFavorite(false);
-        fragment2.setImage(List.of(BitmapFactory.decodeResource(getResources(), R.drawable.location_test)));
-        fragment2.setTypeLocation(Constants.TypeLocation.ROUTE);
-        fragment2.setRouteLength("3,2");
-
-        fragments.add(fragment2);
-
-        return fragments;
-    }
-
-    private List<LocationFragment> convertToPointFragments(List<PointDTO> points) {
+        currentRoutes.forEach(route -> points.addAll(route.getPoints()));
         return points.stream()
-               .map(LocationFragment::new)
-               .collect(Collectors.toList());
+                .map(point ->
+                        new LocationFragment(point,
+                        getRoutesExtra(getRoutesFragmentIncludePoint(point))))
+                .collect(Collectors.toList());
     }
+
     private void getPoints() {
-        List<PointDTO> points = new ArrayList<>();
         PointService pointService = retrofit.createService(PointService.class);
-        Call<List<PointDTO>> call = pointService.getByCity("Ростов-на-Дону");
+        String cityName = citySearch.getText() != null
+                          ? citySearch.getText().toString()
+                          : "";
+        Call<List<PointDTO>> call = pointService.getByCity(cityName);
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
                 if(response.isSuccessful()) {
-                    points.addAll(response.body());
-                    points.forEach(point -> cachePointImages(point.getPhotos(), point.getId()));
-                    locationFragments = convertToPointFragments(points);
-                    fillRecyclePoint(locationFragments);
+                    List<PointDTO> points =response.body();
+                    response.body().forEach(point -> cacheImages(point.getPhoto(), point.getId(), "point"));
+                    fillRecyclePoint(points.stream()
+                            .map(point ->
+                                    new LocationFragment(point,
+                                    getRoutesExtra(getRoutesFragmentIncludePoint(point))))
+                            .collect(Collectors.toList()));
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
@@ -171,24 +208,95 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
         });
     }
 
-    private void cachePointImages(List<String> images, long pointId) {
-        cacheFiles(HomeActivity.this, getFileName("point", pointId), images);
+    private void getExcursions() {
+        RouteService service = retrofit.createService(RouteService.class);
+        String cityName = citySearch.getText() != null
+                ? citySearch.getText().toString()
+                : "";
+        Call<List<RouteDTO>> call = service.getByCityName(cityName);
+        call.enqueue(new Callback<List<RouteDTO>>() {
+            @Override
+            public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
+                if(response.isSuccessful()) {
+                    List<RouteDTO> routes =response.body();
+                    response.body().forEach(route -> {
+                        route.getStopsOnRoute()
+                             .forEach(point -> cacheImages(point.getPhoto(), point.getId(), "point"));
+
+                        PointDTO generalPoint = route.getStopsOnRoute().get(0);
+                        cacheImages(generalPoint.getPhoto(), route.getId(), "route");
+                    });
+                    currentRoutes = routes.stream()
+                            .map(LocationFragment::new)
+                            .collect(Collectors.toList());
+                    fillRecyclePoint(currentRoutes);
+                } else {
+                    Log.i("POINT", "onResponse: " + "404 not found");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
+
+            }
+        });
+    }
+    private void getCities(String name) {
+        CityService service = retrofit.createService(CityService.class);
+        Call<List<String>> call = service.getByName(name);
+
+        call.enqueue(new Callback<List<String>>() {
+            @Override
+            public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+                if(response.isSuccessful()) {
+                    fillCityContainer(response.body());
+                } else {
+                    Log.i("POINT", "onResponse: " + "404 not found");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<String>> call, Throwable t) {
+
+            }
+        });
+
+    }
+
+    private void cacheImages(String image, long id, String type) {
+        cacheFiles(HomeActivity.this, getFileName(type, id), image);
+    }
+
+    private void fillCityContainer(List<String> cities) {
+        cityAdapter = new ArrayAdapter<>(this, R.layout.fragment_city_name, R.id.product_name, cities);
+        cityListView.setAdapter(cityAdapter);
     }
 
     @Override
     public void onTabSelected(TabLayout.Tab tab) {
         switch (tab.getPosition()) {
             case 0: {
-                fillRecycleRoute();
+                isExcursion = true;
+                if(currentRoutes.isEmpty()) getExcursions();
+                else fillRecyclePoint(currentRoutes);
                 break;
             }
             case 1: {
-                getPoints();
+                isExcursion = false;
+                List<LocationFragment> points = getPointsFromExcursion();
+                if (points.isEmpty()) getPoints();
+                else fillRecyclePoint(points);
                 break;
             }
         }
     }
 
+    private List<RouteDTO> getRoutesFragmentIncludePoint(PointDTO pointDTO) {
+        return currentRoutes.stream()
+                .filter(route -> route.getPoints().contains(pointDTO))
+                .map(RouteDTO::new)
+                .collect(Collectors.toList());
+    }
     @Override
     public void onTabUnselected(TabLayout.Tab tab) {
 
@@ -196,6 +304,6 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
 
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
-        recyclerView.setAdapter(new LocationAdapter(HomeActivity.this, new ArrayList<>()));
+
     }
 }
