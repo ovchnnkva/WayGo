@@ -53,6 +53,7 @@
         android:id="@+id/toggle_favorite"
         android:layout_width="38dp"
         android:layout_height="38dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="156dp"
         android:background="@drawable/toggle_favorites"
         android:textOff="@null"
@@ -86,6 +87,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
                 android:background="@drawable/button_style_app_theme"
                 android:fontFamily="sans-serif-medium"
                 android:gravity="center_horizontal|center_vertical"
@@ -100,7 +102,7 @@
                 app:layout_constraintHorizontal_bias="0.485"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/points_container"
-                app:layout_constraintVertical_bias="0.589"
+                app:layout_constraintVertical_bias="1.0"
                 app:layout_constraintWidth_percent="0.91" />
 
             <TextView
@@ -146,16 +148,15 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/points_container"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:foregroundGravity="left"
                 android:orientation="horizontal"
                 android:paddingLeft="5dp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.421"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView3"
-                app:layout_constraintVertical_bias="0.101"
                 app:layout_constraintWidth_percent="0.90"
                 app:reverseLayout="true" />
 

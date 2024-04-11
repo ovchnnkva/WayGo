@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,33 +9,130 @@
     <com.mapbox.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginEnd="0dp"
-        android:layout_marginBottom="0dp" />
-
-    <com.google.android.material.button.MaterialButton
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10sp"
-        android:layout_marginEnd="10sp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginBottom="20sp"
-        android:id="@+id/setRoute"
-        android:text="Set Route"/>
+        app:layout_constraintBottom_toTopOf="@+id/scroll"
+        app:layout_constraintHeight_percent="0.63"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="16dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/focusLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/my_location"
-        android:id="@+id/focusLocation"
         android:layout_alignParentEnd="true"
-        android:layout_above="@id/setRoute"
-        android:layout_margin="16sp"/>
+        android:layout_margin="16sp"
+        android:background="@drawable/curcle_point_background"
+        android:src="@drawable/my_location"
+        app:backgroundTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/scroll"
+        app:layout_constraintEnd_toEndOf="@+id/mapView" />
 
-</RelativeLayout>
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/substrate_login"
+        android:fillViewport="true"
+        android:foregroundGravity="center_vertical|center_horizontal"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.40"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layout_data"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="fill_horizontal"
+            android:orientation="horizontal"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5">
+
+            <TextView
+                android:id="@+id/name_point"
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/test_location_name"
+                android:textAlignment="textStart"
+                android:textColor="@color/black"
+                android:textSize="21sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@+id/layout_data"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/layout_data"
+                app:layout_constraintTop_toTopOf="@+id/layout_data" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/ar_button"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginBottom="11dp"
+                android:background="@drawable/ar_button"
+                app:layout_constraintBottom_toTopOf="@+id/descriprion_point"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.951"
+                app:layout_constraintStart_toStartOf="@+id/name_point"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
+
+            <TextView
+                android:id="@+id/descriprion_point"
+                android:layout_width="match_parent"
+                android:layout_height="71dp"
+                android:layout_marginTop="20dp"
+                android:text="@string/test_location_description_long"
+                android:textAlignment="textStart"
+                android:textSize="14sp"
+                app:layout_constraintEnd_toEndOf="@+id/layout_data"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/layout_data"
+                app:layout_constraintTop_toBottomOf="@+id/name_point"
+                app:layout_constraintWidth_percent="0.90" />
+
+            <com.smarteist.autoimageslider.SliderView
+                android:id="@+id/slider_map"
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/image_small_background"
+                android:clipToOutline="true"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/layout_data"
+                app:layout_constraintHeight_percent="0.36"
+                app:layout_constraintHorizontal_bias="0.842"
+                app:layout_constraintStart_toStartOf="@+id/layout_data"
+                app:layout_constraintTop_toBottomOf="@+id/descriprion_point"
+                app:layout_constraintVertical_bias="1.0"
+                app:sliderAnimationDuration="600"
+                app:sliderAutoCycleDirection="back_and_forth"
+                app:sliderAutoCycleEnabled="true"
+                app:sliderIndicatorAnimationDuration="600"
+                app:sliderIndicatorEnabled="true"
+                app:sliderIndicatorGravity="center_horizontal|bottom"
+                app:sliderIndicatorMarginBottom="35dp"
+                app:sliderIndicatorOrientation="horizontal"
+                app:sliderIndicatorPadding="1dp"
+                app:sliderIndicatorRadius="2dp"
+                app:sliderIndicatorSelectedColor="#FFFFFF"
+                app:sliderIndicatorUnselectedColor="@color/stroke_gray"
+                app:sliderScrollTimeInSec="2"
+                app:sliderStartAutoCycle="true" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

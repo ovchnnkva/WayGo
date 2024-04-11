@@ -55,7 +55,7 @@ public class PointAdapter extends RecyclerView.Adapter<PointAdapter.ViewHolder>{
             super(itemView);
             image = itemView.findViewById(R.id.image_location);
             name = itemView.findViewById(R.id.name);
-            description = itemView.findViewById(R.id.descriprion);
+            description = itemView.findViewById(R.id.description);
         }
     }
 }

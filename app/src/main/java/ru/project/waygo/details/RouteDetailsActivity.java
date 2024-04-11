@@ -7,6 +7,7 @@ import static ru.project.utils.CacheUtils.getFileCache;
 import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getPointsFromExtra;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -22,11 +23,13 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.smarteist.autoimageslider.SliderView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import ru.project.waygo.R;
@@ -37,6 +40,7 @@ import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
 import ru.project.waygo.fragment.RoutePhotosFragment;
+import ru.project.waygo.map.MapBoxView;
 
 public class RouteDetailsActivity extends AppCompatActivity {
     private SliderView slider;
@@ -45,6 +49,8 @@ public class RouteDetailsActivity extends AppCompatActivity {
     private TextView length;
     private TextView description;
     private RecyclerView container;
+    private MaterialButton goToExcurssion;
+    private String pointsExtra;
     private long routeId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +66,7 @@ public class RouteDetailsActivity extends AppCompatActivity {
         slider = findViewById(R.id.slider);
 
         slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-        slider.setScrollTimeInSec(3);
+        slider.setScrollTimeInSec(2);
         slider.setAutoCycle(true);
         slider.startAutoCycle();
 
@@ -68,6 +74,7 @@ public class RouteDetailsActivity extends AppCompatActivity {
         description = findViewById(R.id.descriprion_route);
         favorite = findViewById(R.id.toggle_favorite);
         length = findViewById(R.id.route_length);
+        goToExcurssion = findViewById(R.id.go_to_excursion);
 
         container = findViewById(R.id.points_container);
         container.setHasFixedSize(true);
@@ -76,11 +83,20 @@ public class RouteDetailsActivity extends AppCompatActivity {
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         container.setLayoutManager(linearLayoutManager);
 
-        container.setAdapter(new PointAdapter(RouteDetailsActivity.this, new ArrayList<>()));
-
         fillFromIntent();
+        setListeners();
     }
 
+    private void setListeners() {
+        Context context = RouteDetailsActivity.this;
+        Intent intent = new Intent(context, MapBoxView.class);
+        goToExcurssion.setOnClickListener(e -> {
+            intent.putExtra("name", name.getText().toString());
+            intent.putExtra("description", description.getText().toString());
+            intent.putExtra("points", pointsExtra);
+            context.startActivity(intent);
+        });
+    }
     private void fillFromIntent() {
         Intent intent = getIntent();
         routeId = intent.getLongExtra("id", 0);
@@ -88,8 +104,8 @@ public class RouteDetailsActivity extends AppCompatActivity {
         description.setText(intent.getStringExtra("description"));
         length.setText(intent.getStringExtra("length"));
         favorite.setChecked(intent.getBooleanExtra("favorite", false));
-
-        fillPoints(getPointsFromExtra(intent.getStringExtra("points")));
+        pointsExtra = Objects.requireNonNullElse(intent.getStringExtra("points"), "");
+        fillPoints(getPointsFromExtra(pointsExtra));
     }
 
     private void fillPoints(List<PointDTO> points) {

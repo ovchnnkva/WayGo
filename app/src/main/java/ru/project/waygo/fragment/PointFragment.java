@@ -25,7 +25,7 @@ public class PointFragment extends Fragment {
 
     public PointFragment(PointDTO point, Bitmap image) {
         this.name = point.getPointName();
-        description = point.getDescription();
+        this.description = point.getDescription();
         this.image = image;
     }
 

@@ -24,13 +24,14 @@
             android:layout_width="327dp"
             android:layout_height="187dp"
             android:layout_marginTop="6dp"
-            android:background="@color/background_app"
+            android:background="@drawable/image_small_background"
             android:contentDescription="@string/app_name"
             android:src="@drawable/location_test"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            android:clipToOutline="true"/>
 
         <TextView
             android:id="@+id/name_location"
