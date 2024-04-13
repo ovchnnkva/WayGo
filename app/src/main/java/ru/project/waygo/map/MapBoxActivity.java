@@ -1,7 +1,6 @@
 package ru.project.waygo.map;
 
 import static com.mapbox.maps.plugin.animation.CameraAnimationsUtils.getCamera;
-import static com.mapbox.maps.plugin.gestures.GesturesUtils.addOnMapClickListener;
 import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
@@ -9,9 +8,10 @@ import static ru.project.utils.Base64Util.stringToByte;
 import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
 import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
 import static ru.project.utils.CacheUtils.getFileCache;
+import static ru.project.utils.CacheUtils.getFileDescriptor;
 import static ru.project.utils.CacheUtils.getFileName;
-import static ru.project.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.utils.IntentExtraUtils.getPointsFromExtra;
+import static ru.project.utils.StringUtils.getAudioTimeString;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -19,20 +19,22 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.view.View;
-import android.widget.ScrollView;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ToggleButton;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
@@ -75,6 +77,7 @@ import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 import com.smarteist.autoimageslider.SliderView;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,14 +86,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.var;
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
-import ru.project.waygo.main.HomeActivity;
 
-public class MapBoxView extends AppCompatActivity {
+public class MapBoxActivity extends BaseActivity {
     MapView mapView;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
@@ -99,8 +102,26 @@ public class MapBoxView extends AppCompatActivity {
     boolean focusLocation = true;
     private MapboxNavigation mapboxNavigation;
     private SliderView slider;
-    private ScrollView scrollView;
+    private ToggleButton playButton;
+    private MaterialButton backwardButton;
+    private MaterialButton forwardButton;
+    private TextView currentTimeText;
+    private TextView allTimeText;
+    private MediaPlayer player;
+    private Handler handler;
+    private SeekBar seekBar;
+    private ToggleButton speedAudioButton;
 
+    private final Runnable updateSongTime = new Runnable() {
+        @SuppressLint("DefaultLocale")
+        @Override
+        public void run() {
+            int currentTime = player.getCurrentPosition();
+            currentTimeText.setText(getAudioTimeString(currentTime));
+            seekBar.setProgress(currentTime);
+            handler.postDelayed(this, 100);
+        }
+    };
     private final LocationObserver locationObserver = new LocationObserver() {
         @Override
         public void onNewRawLocation(@NonNull Location location) {
@@ -161,7 +182,7 @@ public class MapBoxView extends AppCompatActivity {
     };
     private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
         if (result) {
-            Toast.makeText(MapBoxView.this, "Permission granted! Restart this app", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MapBoxActivity.this, "Permission granted! Restart this app", Toast.LENGTH_SHORT).show();
         }
     });
 
@@ -173,7 +194,13 @@ public class MapBoxView extends AppCompatActivity {
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         slider = findViewById(R.id.slider_map);
-        scrollView = findViewById(R.id.scroll);
+        playButton = findViewById(R.id.toggle_play);
+        backwardButton = findViewById(R.id.button_backward);
+        forwardButton = findViewById(R.id.button_forward);
+        currentTimeText = findViewById(R.id.current_time);
+        allTimeText = findViewById(R.id.all_time);
+        seekBar = findViewById(R.id.seek_bar);
+        speedAudioButton = findViewById(R.id.toggle_speed);
 
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this)
                 .withRouteLineResources(new RouteLineResources.Builder().build())
@@ -194,15 +221,15 @@ public class MapBoxView extends AppCompatActivity {
         mapboxNavigation.registerLocationObserver(locationObserver);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(MapBoxView.this,
+            if (ActivityCompat.checkSelfPermission(MapBoxActivity.this,
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         }
 
-        if (ActivityCompat.checkSelfPermission(MapBoxView.this,
+        if (ActivityCompat.checkSelfPermission(MapBoxActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(MapBoxView.this,
+                || ActivityCompat.checkSelfPermission(MapBoxActivity.this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -260,6 +287,61 @@ public class MapBoxView extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("DefaultLocale")
+    private void createAudioPlayer(long pointId) {
+        player = new MediaPlayer();
+        handler = new Handler();
+        try {
+            player.setDataSource(getFileDescriptor(getApplicationContext(),
+                    getFileName("audio", pointId)));
+            player.prepareAsync();
+        } catch (IOException e) {
+            Log.e("AUDIO_PLAYER", "createAudioPlayer: ", e);
+        }
+
+        playButton.setOnClickListener(view -> {
+            if(playButton.isChecked()) {
+                player.start();
+                int allTime = player.getDuration();
+                allTimeText.setText(getAudioTimeString(allTime));
+                handler.postDelayed(updateSongTime, 100);
+            } else {
+                player.pause();
+            }
+        });
+
+        backwardButton.setOnClickListener(view -> {
+            int currentPosition = player.getCurrentPosition();
+
+            if((currentPosition - 15000) > 0) {
+                player.seekTo(currentPosition - 15000);
+            } else {
+                player.seekTo(0);
+            }
+        });
+
+        forwardButton.setOnClickListener(view -> {
+            int currentPosition = player.getCurrentPosition();
+
+            if((currentPosition + 30000) <= player.getDuration()) {
+                player.seekTo(currentPosition + 30000);
+            } else {
+                player.seekTo(player.getDuration());
+            }
+        });
+
+        speedAudioButton.setOnClickListener(view -> {
+            float speed = 1.0F;
+            if(speedAudioButton.isChecked()) {
+                speed = 2.0F;
+            }
+
+            player.setPlaybackParams(player.getPlaybackParams().setSpeed(speed));
+        });
+
+    }
+
+
     private List<PointDTO> getPoints() {
         Intent intent = getIntent();
         List<PointDTO> points = new ArrayList<>();
@@ -294,13 +376,13 @@ public class MapBoxView extends AppCompatActivity {
 
     private void fillSlider(List<SliderFragment> fragments) {
         Log.i("MAP_SLIDER", "fillSlider: count fragments " + fragments.size());
-        SliderAdapter adapter = new SliderAdapter(MapBoxView.this, fragments);
+        SliderAdapter adapter = new SliderAdapter(MapBoxActivity.this, fragments);
         slider.setSliderAdapter(adapter);
 
     }
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> points) {
-        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxView.this);
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxActivity.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
             public void onSuccess(LocationEngineResult result) {
@@ -335,7 +417,7 @@ public class MapBoxView extends AppCompatActivity {
 
                     @Override
                     public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
-                        Toast.makeText(MapBoxView.this, "Route request failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapBoxActivity.this, "Route request failed", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

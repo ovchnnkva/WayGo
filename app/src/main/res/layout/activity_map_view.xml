@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".map.MapBoxView">
+    android:backgroundTintMode="@null"
+    tools:context=".map.MapBoxActivity">
 
     <com.mapbox.maps.MapView
         android:id="@+id/mapView"
@@ -16,6 +17,7 @@
         android:layout_alignParentBottom="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.90"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -86,18 +88,113 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0" />
 
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/layout_player"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="fill_horizontal"
+                android:orientation="horizontal"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/name_point">
+
+                <SeekBar
+                    android:id="@+id/seek_bar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:pointerIcon="none"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.126" />
+
+                <ToggleButton
+                    android:id="@+id/toggle_play"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/toggle_player"
+                    android:textOff="@null"
+                    android:textOn="@null"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.498"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_backward"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginTop="28dp"
+                    android:layout_marginEnd="24dp"
+                    android:background="@drawable/button_back_player"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/toggle_play"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_forward"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_marginTop="28dp"
+                    android:background="@drawable/button_forward_player"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.165"
+                    app:layout_constraintStart_toEndOf="@+id/toggle_play"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <ToggleButton
+                    android:id="@+id/toggle_speed"
+                    android:layout_width="23dp"
+                    android:layout_height="18dp"
+                    android:layout_marginTop="36dp"
+                    android:background="@drawable/toggle_speed_player"
+                    android:textOff="@null"
+                    android:textOn="@null"
+                    app:layout_constraintEnd_toStartOf="@+id/button_backward"
+                    app:layout_constraintHorizontal_bias="0.202"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
+
+                <TextView
+                    android:id="@+id/current_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:text="00:50"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
+
+                <TextView
+                    android:id="@+id/all_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:text="03:50"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintStart_toEndOf="@+id/current_time"
+                    app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <TextView
                 android:id="@+id/descriprion_point"
                 android:layout_width="match_parent"
                 android:layout_height="71dp"
-                android:layout_marginTop="20dp"
                 android:text="@string/test_location_description_long"
                 android:textAlignment="textStart"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="@+id/layout_data"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="@+id/layout_data"
-                app:layout_constraintTop_toBottomOf="@+id/name_point"
+                app:layout_constraintTop_toBottomOf="@+id/layout_player"
                 app:layout_constraintWidth_percent="0.90" />
 
             <com.smarteist.autoimageslider.SliderView

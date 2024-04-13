@@ -14,11 +14,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
 
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.login.LoginActivity;
 import ru.project.waygo.login.RegistrationActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private MaterialButton loginButton;
     private MaterialButton registrationButton;
 

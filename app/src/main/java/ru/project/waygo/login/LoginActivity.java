@@ -24,10 +24,11 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.Objects;
 import java.util.Optional;
 
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.main.HomeActivity;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private MaterialButton loginButton;
     private MaterialButton registrationButton;

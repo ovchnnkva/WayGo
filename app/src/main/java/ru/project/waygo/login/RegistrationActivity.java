@@ -11,9 +11,10 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
 
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 
-public class RegistrationActivity extends AppCompatActivity {
+public class RegistrationActivity extends BaseActivity {
     private TextInputEditText password;
     private TextInputEditText email;
 

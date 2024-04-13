@@ -26,12 +26,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.RoutePhotosFragment;
 
-public class PointDetailsActivity extends AppCompatActivity {
+public class PointDetailsActivity extends BaseActivity {
 
     private RecyclerView container;
 

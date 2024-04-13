@@ -6,12 +6,10 @@ import static ru.project.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.utils.IntentExtraUtils.getRoutesExtra;
 
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -39,20 +37,19 @@ import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.project.waygo.Constants;
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.adapter.LocationAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.LocationFragment;
 import ru.project.waygo.map.MapBoxGeneralActivity;
-import ru.project.waygo.map.MapBoxView;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.CityService;
 import ru.project.waygo.retrofit.services.PointService;
 import ru.project.waygo.retrofit.services.RouteService;
 
-public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
+public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 
     private RecyclerView recyclerView;
 
@@ -79,7 +76,6 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
         recyclerView = findViewById(R.id.location_container);
         tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setOnTabSelectedListener(this);
@@ -344,5 +340,4 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
     public void onTabReselected(TabLayout.Tab tab) {
 
     }
-
 }

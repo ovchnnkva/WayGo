@@ -85,6 +85,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.var;
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
@@ -92,7 +93,7 @@ import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
 import ru.project.waygo.main.HomeActivity;
 
-public class MapBoxGeneralActivity extends AppCompatActivity {
+public class MapBoxGeneralActivity extends BaseActivity {
     MapView mapView;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();

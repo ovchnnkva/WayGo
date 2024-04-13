@@ -27,22 +27,20 @@ import com.google.android.material.button.MaterialButton;
 import com.smarteist.autoimageslider.SliderView;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.SliderFragment;
 import ru.project.waygo.adapter.PointAdapter;
-import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
-import ru.project.waygo.fragment.RoutePhotosFragment;
-import ru.project.waygo.map.MapBoxView;
+import ru.project.waygo.map.MapBoxActivity;
 
-public class RouteDetailsActivity extends AppCompatActivity {
+public class RouteDetailsActivity extends BaseActivity {
     private SliderView slider;
     private TextView name;
     private ToggleButton favorite;
@@ -89,7 +87,7 @@ public class RouteDetailsActivity extends AppCompatActivity {
 
     private void setListeners() {
         Context context = RouteDetailsActivity.this;
-        Intent intent = new Intent(context, MapBoxView.class);
+        Intent intent = new Intent(context, MapBoxActivity.class);
         goToExcurssion.setOnClickListener(e -> {
             intent.putExtra("name", name.getText().toString());
             intent.putExtra("description", description.getText().toString());
