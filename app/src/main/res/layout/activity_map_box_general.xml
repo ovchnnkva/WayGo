@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_app"
+    tools:context=".map.MapBoxGeneralActivity">
+
+    <com.mapbox.maps.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.88"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/focusLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16sp"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/curcle_point_background"
+        android:src="@drawable/my_location"
+        app:backgroundTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/navigation_bar_map"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation_bar_map"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/background_app"
+        android:foregroundTint="@color/background_app"
+        app:backgroundTint="@color/background_app"
+        app:itemActiveIndicatorStyle="@android:color/transparent"
+        app:itemBackground="@color/background_app"
+        app:itemIconTint="@drawable/navigation_item_selector"
+        app:itemPaddingTop="25dp"
+        app:itemRippleColor="@color/background_app"
+        app:itemTextColor="@drawable/navigation_item_selector"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mapView"
+        app:menu="@menu/navigation_items" />
+</androidx.constraintlayout.widget.ConstraintLayout>

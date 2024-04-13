@@ -5,11 +5,13 @@ import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.utils.IntentExtraUtils.getRoutesExtra;
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -25,6 +27,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -42,6 +45,8 @@ import ru.project.waygo.adapter.LocationAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.LocationFragment;
+import ru.project.waygo.map.MapBoxGeneralActivity;
+import ru.project.waygo.map.MapBoxView;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.CityService;
 import ru.project.waygo.retrofit.services.PointService;
@@ -88,7 +93,32 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
                 ? citySearch.getText().toString()
                 : "";
 
-        getExcursions();
+        BottomNavigationView bottomNavigationView=findViewById(R.id.navigation_bar);
+
+        // Set Home selected
+        bottomNavigationView.setSelectedItemId(R.id.action_main);
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch(item.getItemId())
+            {
+                case R.id.action_map:
+                    Intent intent = new Intent(getApplicationContext(), MapBoxGeneralActivity.class);
+                    intent.putExtra("points", getPointsExtra(getPointsDtoFromExcursion()));
+                    startActivity(intent);
+                    overridePendingTransition(0,0);
+                    finish();
+                    return true;
+                case R.id.action_main:
+                    return true;
+                case R.id.action_favorites:
+                    return true;
+                case R.id.action_account:
+                    return true;
+            }
+            return false;
+        });
+
+        if(currentRoutes.isEmpty()) getExcursions();
         setListeners();
     }
 
@@ -178,6 +208,13 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
                         new LocationFragment(point,
                         getRoutesExtra(getRoutesFragmentIncludePoint(point))))
                 .collect(Collectors.toList());
+    }
+
+    private List<PointDTO> getPointsDtoFromExcursion() {
+        Set<PointDTO> points = new HashSet<>();
+
+        currentRoutes.forEach(route -> points.addAll(route.getPoints()));
+        return new ArrayList<>(points);
     }
 
     private void getPoints() {
@@ -307,4 +344,5 @@ public class HomeActivity extends AppCompatActivity implements TabLayout.OnTabSe
     public void onTabReselected(TabLayout.Tab tab) {
 
     }
+
 }

@@ -5,6 +5,9 @@
       <entry key="HomeActivity">
         <State />
       </entry>
+      <entry key="HomeActivity (1)">
+        <State />
+      </entry>
       <entry key="LoginActivity">
         <State>
           <targetSelectedWithDropDown>
@@ -39,9 +42,6 @@
           </targetSelectedWithDropDown>
           <timeTargetWasSelectedWithDropDown value="2024-03-10T11:42:23.828304568Z" />
         </State>
-      </entry>
-      <entry key="RegistrationActivity">
-        <State />
       </entry>
       <entry key="app">
         <State />

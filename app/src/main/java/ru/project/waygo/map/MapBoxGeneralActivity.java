@@ -51,6 +51,8 @@ import com.mapbox.maps.extension.style.layers.properties.generated.TextAnchor;
 import com.mapbox.maps.plugin.animation.MapAnimationOptions;
 import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
 import com.mapbox.maps.plugin.annotation.AnnotationPluginImplKt;
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManagerKt;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
@@ -90,7 +92,7 @@ import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
 import ru.project.waygo.main.HomeActivity;
 
-public class MapBoxView extends AppCompatActivity {
+public class MapBoxGeneralActivity extends AppCompatActivity {
     MapView mapView;
     FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
@@ -98,9 +100,7 @@ public class MapBoxView extends AppCompatActivity {
     private MapboxRouteLineApi routeLineApi;
     boolean focusLocation = true;
     private MapboxNavigation mapboxNavigation;
-    private SliderView slider;
-    private ScrollView scrollView;
-
+    private BottomNavigationView bottomNavigationView;
     private final LocationObserver locationObserver = new LocationObserver() {
         @Override
         public void onNewRawLocation(@NonNull Location location) {
@@ -121,8 +121,8 @@ public class MapBoxView extends AppCompatActivity {
         public void onRoutesChanged(@NonNull RoutesUpdatedResult routesUpdatedResult) {
             routeLineApi.setNavigationRoutes(routesUpdatedResult.getNavigationRoutes(), routeLineErrorRouteSetValueExpected ->
                     Optional.ofNullable(mapView.getMapboxMap().getStyle()).ifPresent(style -> {
-                routeLineView.renderRouteDrawData(style, routeLineErrorRouteSetValueExpected);
-            }));
+                        routeLineView.renderRouteDrawData(style, routeLineErrorRouteSetValueExpected);
+                    }));
         }
     };
 
@@ -161,19 +161,38 @@ public class MapBoxView extends AppCompatActivity {
     };
     private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
         if (result) {
-            Toast.makeText(MapBoxView.this, "Permission granted! Restart this app", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MapBoxGeneralActivity.this, "Permission granted! Restart this app", Toast.LENGTH_SHORT).show();
         }
     });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_map_view);
+        setContentView(R.layout.activity_map_box_general);
 
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
-        slider = findViewById(R.id.slider_map);
-        scrollView = findViewById(R.id.scroll);
+        bottomNavigationView = findViewById(R.id.navigation_bar_map);
+
+        bottomNavigationView.setSelectedItemId(R.id.action_map);
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch(item.getItemId())
+            {
+                case R.id.action_map:
+                    return true;
+                case R.id.action_main:
+                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
+                    return true;
+                case R.id.action_favorites:
+                    return true;
+                case R.id.action_account:
+                    return true;
+            }
+            return false;
+        });
 
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this)
                 .withRouteLineResources(new RouteLineResources.Builder().build())
@@ -194,15 +213,15 @@ public class MapBoxView extends AppCompatActivity {
         mapboxNavigation.registerLocationObserver(locationObserver);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(MapBoxView.this,
+            if (ActivityCompat.checkSelfPermission(MapBoxGeneralActivity.this,
                     Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
             }
         }
 
-        if (ActivityCompat.checkSelfPermission(MapBoxView.this,
+        if (ActivityCompat.checkSelfPermission(MapBoxGeneralActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(MapBoxView.this,
+                || ActivityCompat.checkSelfPermission(MapBoxGeneralActivity.this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
             activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -230,6 +249,13 @@ public class MapBoxView extends AppCompatActivity {
             Bitmap bitmap = getBitmapFromDrawable(getApplicationContext(), R.drawable.dot_icon);
             AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
             PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
+            pointAnnotationManager.addClickListener(pointAnnotation -> {
+                List<Point> points = new ArrayList<>();
+                points.add(pointAnnotation.getPoint());
+                fetchRoute(points);
+                return true;
+            });
+
 
             List<PointDTO> pointsDto = getPoints();
             List<Point> points = pointsDto.stream()
@@ -242,10 +268,23 @@ public class MapBoxView extends AppCompatActivity {
                         .withTextAnchor(TextAnchor.CENTER)
                         .withIconImage(bitmap)
                         .withPoint(p);
+
                 pointAnnotationManager.create(pointAnnotationOptions);
             });
 
-            fetchRoute(points);
+
+//            else {
+//                addOnMapClickListener(mapView.getMapboxMap(), point -> {
+//                    pointAnnotationManager.deleteAll();
+//                    PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions()
+//                            .withTextAnchor(TextAnchor.CENTER)
+//                            .withIconImage(bitmap)
+//                            .withPoint(point);
+//                    pointAnnotationManager.create(pointAnnotationOptions);
+//
+//                    return true;
+//                });
+//            }
 
             focusLocationBtn.setOnClickListener(view -> {
                 focusLocation = true;
@@ -271,12 +310,6 @@ public class MapBoxView extends AppCompatActivity {
                 .stream()
                 .map(point -> new PointFragment(point, getPointImage(point.getId())))
                 .collect(Collectors.toList());
-        List<SliderFragment> images = fragments
-                .stream()
-                .map(fragment -> new SliderFragment(fragment.getImage()))
-                .collect(Collectors.toList());
-
-        fillSlider(images);
 
         return points;
     }
@@ -291,16 +324,9 @@ public class MapBoxView extends AppCompatActivity {
 
         return getBitmapFromDrawable(getApplicationContext(), R.drawable.location_test);
     }
-
-    private void fillSlider(List<SliderFragment> fragments) {
-        Log.i("MAP_SLIDER", "fillSlider: count fragments " + fragments.size());
-        SliderAdapter adapter = new SliderAdapter(MapBoxView.this, fragments);
-        slider.setSliderAdapter(adapter);
-
-    }
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> points) {
-        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxView.this);
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxGeneralActivity.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
             public void onSuccess(LocationEngineResult result) {
@@ -335,7 +361,7 @@ public class MapBoxView extends AppCompatActivity {
 
                     @Override
                     public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
-                        Toast.makeText(MapBoxView.this, "Route request failed", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MapBoxGeneralActivity.this, "Route request failed", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
