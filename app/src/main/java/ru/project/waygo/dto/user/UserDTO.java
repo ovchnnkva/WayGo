@@ -1,6 +1,7 @@
 package ru.project.waygo.dto.user;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.project.waygo.dto.point.PointCheckInDTO;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class UserDTO {
     private long id;
     private String uid;

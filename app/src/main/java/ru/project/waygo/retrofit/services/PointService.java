@@ -21,4 +21,9 @@ public interface PointService {
     @GET("api/point")
     Call<PointDTO> getByCityAndName(@Query("city") String city, @Query("pointName") String pointName);
 
+    @GET("api/point/audio")
+    Call<String> getAudio(@Query("pointId") long pointId);
+
+    @GET("api/point/coordinates")
+    Call<List<PointDTO>> getCoordinatesByCityName(@Query("city") String city);
 }

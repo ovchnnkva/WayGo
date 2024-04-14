@@ -96,6 +96,7 @@
                 android:orientation="horizontal"
                 android:paddingTop="20dp"
                 android:paddingBottom="20dp"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/name_point">
 
@@ -168,7 +169,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="00:50"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/seek_bar" />
 
@@ -177,7 +177,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
-                    android:text="03:50"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toEndOf="@+id/current_time"
@@ -188,6 +187,7 @@
                 android:id="@+id/descriprion_point"
                 android:layout_width="match_parent"
                 android:layout_height="71dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/test_location_description_long"
                 android:textAlignment="textStart"
                 android:textSize="14sp"
@@ -204,10 +204,12 @@
                 android:layout_centerInParent="true"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
                 android:background="@drawable/image_small_background"
                 android:clipToOutline="true"
                 android:scaleType="centerCrop"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:visibility="visible"
+                app:layout_constraintBottom_toTopOf="@+id/button_next_point"
                 app:layout_constraintEnd_toEndOf="@+id/layout_data"
                 app:layout_constraintHeight_percent="0.36"
                 app:layout_constraintHorizontal_bias="0.842"
@@ -228,6 +230,25 @@
                 app:sliderIndicatorUnselectedColor="@color/stroke_gray"
                 app:sliderScrollTimeInSec="2"
                 app:sliderStartAutoCycle="true" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_next_point"
+                android:layout_width="0dp"
+                android:layout_height="45dp"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/button_style_app_theme"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center_horizontal|center_vertical"
+                android:minHeight="48dp"
+                android:text="@string/go_to_next_point"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/app_theme"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="@+id/layout_data"
+                app:layout_constraintWidth_percent="0.94" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

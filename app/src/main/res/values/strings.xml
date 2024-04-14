@@ -23,7 +23,12 @@
     <string name="main">Главная</string>
     <string name="map">Карта</string>
     <string name="favorites">Избранное</string>
+    <string name="favorites_empty">У вас еще \n нет избранного</string>
+    <string name="go_home">Перейти на главную, </string>
+    <string name="find_excursion"> чтобы найти подходящую экскурсию</string>
     <string name="account">Профиль</string>
+    <string name="end_excursion">Завершить</string>
+    <string name="go_to_next_point">К следующей точке</string>
     <string name="test_location_description_long">Семь «сталинских сестер» — знаменитые высотные здания, которые стали символом Москвы.
         На этой прогулке мы поговорим об истории строительства, сложностях,
         которые возникли у архитекторов и о назначении каждого здания.</string>

@@ -4,8 +4,13 @@ import static ru.project.utils.CacheUtils.cacheFiles;
 import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.utils.IntentExtraUtils.getRoutesExtra;
+import static ru.project.waygo.Constants.AUTH_FILE_NAME;
+import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
+import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,7 +24,6 @@ import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -42,12 +46,14 @@ import ru.project.waygo.R;
 import ru.project.waygo.adapter.LocationAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.dto.route.RouteDTO;
+import ru.project.waygo.favorite.FavoriteActivity;
 import ru.project.waygo.fragment.LocationFragment;
 import ru.project.waygo.map.MapBoxGeneralActivity;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.CityService;
 import ru.project.waygo.retrofit.services.PointService;
 import ru.project.waygo.retrofit.services.RouteService;
+import ru.project.waygo.retrofit.services.UserService;
 
 public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
 
@@ -66,6 +72,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private String cityCurrent;
     private List<LocationFragment> currentRoutes = new ArrayList<>();
     private boolean isExcursion = true;
+    @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,24 +96,28 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 ? citySearch.getText().toString()
                 : "";
 
+        savePreferences();
+
         BottomNavigationView bottomNavigationView=findViewById(R.id.navigation_bar);
 
         // Set Home selected
         bottomNavigationView.setSelectedItemId(R.id.action_main);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            Intent intent;
             switch(item.getItemId())
             {
                 case R.id.action_map:
-                    Intent intent = new Intent(getApplicationContext(), MapBoxGeneralActivity.class);
-                    intent.putExtra("points", getPointsExtra(getPointsDtoFromExcursion()));
-                    startActivity(intent);
+                    startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
                     overridePendingTransition(0,0);
                     finish();
                     return true;
                 case R.id.action_main:
                     return true;
                 case R.id.action_favorites:
+                    startActivity(new Intent(getApplicationContext(), FavoriteActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
                     return true;
                 case R.id.action_account:
                     return true;
@@ -116,6 +127,11 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
         if(currentRoutes.isEmpty()) getExcursions();
         setListeners();
+    }
+
+    private long getUserId() {
+        SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
+        return Long.parseLong(preferences.getString(ID_USER_AUTH_FILE, ""));
     }
 
     private void setListeners() {
@@ -191,7 +207,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     private void fillRecyclePoint(List<LocationFragment> fragments) {
-        LocationAdapter adapter = new LocationAdapter(HomeActivity.this, fragments);
+        LocationAdapter adapter = new LocationAdapter(HomeActivity.this, fragments, getUserId());
         recyclerView.setAdapter(adapter);
     }
 
@@ -206,13 +222,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 .collect(Collectors.toList());
     }
 
-    private List<PointDTO> getPointsDtoFromExcursion() {
-        Set<PointDTO> points = new HashSet<>();
-
-        currentRoutes.forEach(route -> points.addAll(route.getPoints()));
-        return new ArrayList<>(points);
-    }
-
     private void getPoints() {
         PointService pointService = retrofit.createService(PointService.class);
         String cityName = citySearch.getText() != null
@@ -225,11 +234,14 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 if(response.isSuccessful()) {
                     List<PointDTO> points =response.body();
                     response.body().forEach(point -> cacheImages(point.getPhoto(), point.getId(), "point"));
-                    fillRecyclePoint(points.stream()
+
+                    List<LocationFragment> fragments = points.stream()
                             .map(point ->
                                     new LocationFragment(point,
-                                    getRoutesExtra(getRoutesFragmentIncludePoint(point))))
-                            .collect(Collectors.toList()));
+                                            getRoutesExtra(getRoutesFragmentIncludePoint(point))))
+                            .collect(Collectors.toList());
+                    getFavoritesPointsIds(fragments);
+                    fillRecyclePoint(fragments);
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
@@ -238,6 +250,26 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             @Override
             public void onFailure(@NonNull Call<List<PointDTO>> call, @NonNull Throwable t) {
                 Log.i("POINT", "onFailure " + t.getLocalizedMessage());
+            }
+        });
+    }
+
+    private void getFavoritesPointsIds(List<LocationFragment> points) {
+        UserService service = retrofit.createService(UserService.class);
+        Call<List<Long>> call = service.getFavoritePointsIds(getUserId());
+        call.enqueue(new Callback<List<Long>>() {
+            @Override
+            public void onResponse(Call<List<Long>> call, Response<List<Long>> response) {
+                if(response.isSuccessful()) {
+                    points.stream()
+                            .filter(p -> response.body().contains(p.getId()))
+                            .forEach(p -> p.setFavorite(true));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Long>> call, Throwable t) {
+
             }
         });
     }
@@ -263,6 +295,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                     currentRoutes = routes.stream()
                             .map(route -> new LocationFragment(route, getPointsExtra(route.getStopsOnRoute())))
                             .collect(Collectors.toList());
+                    getFavoritesRoutesIds(currentRoutes);
                     fillRecyclePoint(currentRoutes);
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
@@ -271,6 +304,26 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
             @Override
             public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void getFavoritesRoutesIds(List<LocationFragment> routes) {
+        UserService service = retrofit.createService(UserService.class);
+        Call<List<Long>> call = service.getFavoriteRoutesIds(getUserId());
+        call.enqueue(new Callback<List<Long>>() {
+            @Override
+            public void onResponse(Call<List<Long>> call, Response<List<Long>> response) {
+                if(response.isSuccessful()) {
+                    routes.stream()
+                            .filter(p -> response.body().contains(p.getId()))
+                            .forEach(p -> p.setFavorite(true));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Long>> call, Throwable t) {
 
             }
         });
@@ -330,6 +383,13 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 .filter(route -> route.getPoints().contains(pointDTO))
                 .map(RouteDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    private void savePreferences() {
+        SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(CITY_USER_AUTH_FILE, cityCurrent);
+        editor.apply();
     }
     @Override
     public void onTabUnselected(TabLayout.Tab tab) {

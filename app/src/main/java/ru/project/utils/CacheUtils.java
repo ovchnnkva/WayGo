@@ -12,7 +12,10 @@ import java.util.stream.Collectors;
 
 public class CacheUtils {
     public static void cacheFiles(Context context, String fileName, String bytes) {
-        if(bytes == null || bytes.isEmpty()) return;
+        if(bytes == null || bytes.isEmpty()){
+            Log.d("CACHE", "cacheFiles: empty bytes");
+            return;
+        }
 
         File cacheDir = context.getCacheDir();
         File file = new File(cacheDir, fileName + ".txt");
@@ -40,25 +43,6 @@ public class CacheUtils {
             inputStream.close();
             Log.i("CACHE_GET", "getFileCache: cache find with file name " + fileName);
             return buffer;
-        } catch (Exception e) {
-            Log.e("CACHE_GET", "cacheFiles: fail cache " + e.getLocalizedMessage());
-        }
-
-        return null;
-    }
-
-    public static FileDescriptor getFileDescriptor(Context context, String fileName) {
-        File cacheDir = context.getCacheDir();
-        File file = new File(cacheDir, fileName + ".txt");
-
-        try {
-            FileInputStream inputStream = new FileInputStream(file);
-            byte[] buffer = new byte[inputStream.available()];
-
-            inputStream.read(buffer);
-            inputStream.close();
-            Log.i("CACHE_GET", "getFileCache: cache find with file name " + fileName);
-            return inputStream.getFD();
         } catch (Exception e) {
             Log.e("CACHE_GET", "cacheFiles: fail cache " + e.getLocalizedMessage());
         }

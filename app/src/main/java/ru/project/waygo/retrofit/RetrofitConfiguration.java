@@ -1,5 +1,7 @@
 package ru.project.waygo.retrofit;
 
+import com.google.gson.GsonBuilder;
+
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -9,6 +11,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitConfiguration {
+
+    public static String SERVER_URL = "http://192.168.31.6:8080/";
     public <T> T createService(Class<T> service){
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -19,9 +23,10 @@ public class RetrofitConfiguration {
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
 //                .baseUrl("http://192.168.31.70:8080/")
-                .baseUrl("http://192.168.31.6:8080/")
-                .addConverterFactory(GsonConverterFactory.create())
+                .baseUrl(SERVER_URL)
                 .addConverterFactory(ScalarsConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory
+                        .create(new GsonBuilder().setLenient().create()))
                 .client(client)
                 .build();
         return retrofit.create(service);

@@ -1,17 +1,20 @@
 package ru.project.waygo.map;
 
+import static android.media.AudioManager.STREAM_SYSTEM;
 import static com.mapbox.maps.plugin.animation.CameraAnimationsUtils.getCamera;
 import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
+import static ru.project.utils.AudioFileUtils.bytesToAudio;
+import static ru.project.utils.AudioFileUtils.getAudioName;
 import static ru.project.utils.Base64Util.stringToByte;
 import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
 import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
 import static ru.project.utils.CacheUtils.getFileCache;
-import static ru.project.utils.CacheUtils.getFileDescriptor;
 import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getPointsFromExtra;
 import static ru.project.utils.StringUtils.getAudioTimeString;
+import static ru.project.waygo.retrofit.RetrofitConfiguration.SERVER_URL;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -19,11 +22,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PowerManager;
 import android.util.Log;
+import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +38,7 @@ import android.widget.ToggleButton;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.button.MaterialButton;
@@ -75,8 +82,10 @@ import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
+import com.mapbox.turf.TurfMeasurement;
 import com.smarteist.autoimageslider.SliderView;
 
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -86,12 +95,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.var;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
+import ru.project.waygo.retrofit.RetrofitConfiguration;
+import ru.project.waygo.retrofit.services.PointService;
 
 public class MapBoxActivity extends BaseActivity {
     MapView mapView;
@@ -111,15 +125,25 @@ public class MapBoxActivity extends BaseActivity {
     private Handler handler;
     private SeekBar seekBar;
     private ToggleButton speedAudioButton;
+    private MaterialButton nextPointButton;
+    private List<PointDTO> pointsDto;
+
+    private ConstraintLayout layoutPlayer;
 
     private final Runnable updateSongTime = new Runnable() {
         @SuppressLint("DefaultLocale")
         @Override
         public void run() {
-            int currentTime = player.getCurrentPosition();
-            currentTimeText.setText(getAudioTimeString(currentTime));
-            seekBar.setProgress(currentTime);
-            handler.postDelayed(this, 100);
+            if(seekBar.getProgress() == seekBar.getMax()) {
+                seekBar.setProgress(0);
+                playButton.setChecked(false);
+                currentTimeText.setText("00:00");
+            } else {
+                int currentTime = player.getCurrentPosition();
+                currentTimeText.setText(getAudioTimeString(currentTime));
+                seekBar.setProgress(currentTime);
+                handler.postDelayed(this, 100);
+            }
         }
     };
     private final LocationObserver locationObserver = new LocationObserver() {
@@ -201,6 +225,9 @@ public class MapBoxActivity extends BaseActivity {
         allTimeText = findViewById(R.id.all_time);
         seekBar = findViewById(R.id.seek_bar);
         speedAudioButton = findViewById(R.id.toggle_speed);
+        layoutPlayer = findViewById(R.id.layout_player);
+        nextPointButton = findViewById(R.id.button_next_point);
+        player = new MediaPlayer();
 
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this)
                 .withRouteLineResources(new RouteLineResources.Builder().build())
@@ -258,7 +285,7 @@ public class MapBoxActivity extends BaseActivity {
             AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
             PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
 
-            List<PointDTO> pointsDto = getPoints();
+            pointsDto = getPoints();
             List<Point> points = pointsDto.stream()
                     .map(p -> Point.fromLngLat(Objects.requireNonNull(p).getLongitude(), p.getLatitude()))
                     .collect(Collectors.toList());
@@ -272,8 +299,13 @@ public class MapBoxActivity extends BaseActivity {
                 pointAnnotationManager.create(pointAnnotationOptions);
             });
 
-            fetchRoute(points);
+            fetchRoute();
 
+            nextPointButton.setOnClickListener(view -> {
+                if(!pointsDto.isEmpty()) {
+                    fetchRoute();
+                }
+            });
             focusLocationBtn.setOnClickListener(view -> {
                 focusLocation = true;
                 getGestures(mapView).addOnMoveListener(onMoveListener);
@@ -289,21 +321,41 @@ public class MapBoxActivity extends BaseActivity {
 
     @SuppressLint("DefaultLocale")
     private void createAudioPlayer(long pointId) {
-        player = new MediaPlayer();
+        player.reset();
         handler = new Handler();
+
+        player.setAudioAttributes(new AudioAttributes
+                .Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC).
+                setUsage(AudioAttributes.USAGE_MEDIA)
+                .build());
+
+        player.setWakeMode(MapBoxActivity.this, PowerManager.PARTIAL_WAKE_LOCK);
         try {
-            player.setDataSource(getFileDescriptor(getApplicationContext(),
-                    getFileName("audio", pointId)));
+            player.setDataSource(SERVER_URL + "api/point/audio?pointId=" + pointId);
+//            if(player. == 0) {
+//                layoutPlayer.setVisibility(View.GONE);
+//                return;
+//            }
+            player.setOnPreparedListener(player -> layoutPlayer.setVisibility(View.VISIBLE));
+            player.setOnErrorListener((player, what, extra)  -> {
+                layoutPlayer.setVisibility(View.GONE);
+                return false;
+            });
             player.prepareAsync();
         } catch (IOException e) {
+
             Log.e("AUDIO_PLAYER", "createAudioPlayer: ", e);
+            return;
         }
+
 
         playButton.setOnClickListener(view -> {
             if(playButton.isChecked()) {
                 player.start();
                 int allTime = player.getDuration();
                 allTimeText.setText(getAudioTimeString(allTime));
+                seekBar.setMax(allTime);
                 handler.postDelayed(updateSongTime, 100);
             } else {
                 player.pause();
@@ -339,8 +391,23 @@ public class MapBoxActivity extends BaseActivity {
             player.setPlaybackParams(player.getPlaybackParams().setSpeed(speed));
         });
 
-    }
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
 
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                player.seekTo(seekBar.getProgress());
+            }
+        });
+    }
 
     private List<PointDTO> getPoints() {
         Intent intent = getIntent();
@@ -363,6 +430,28 @@ public class MapBoxActivity extends BaseActivity {
         return points;
     }
 
+    private Point findNextPoint(Point originPoint) {
+        double min = 100000.0;
+        PointDTO nextPoint = null;
+        for(PointDTO dto : pointsDto) {
+            Point point = Point.fromLngLat(Objects.requireNonNull(dto).getLongitude(), dto.getLatitude());
+            double currentDistance = TurfMeasurement.distance(originPoint, point);
+
+            if (currentDistance < min) {
+                min = currentDistance;
+                nextPoint = dto;
+            }
+        }
+        pointsDto.remove(nextPoint);
+        if(pointsDto.isEmpty()) {
+            nextPointButton.setText(getResources().getString(R.string.end_excursion));
+        }
+
+        createAudioPlayer(nextPoint.getId());
+
+        return Point.fromLngLat(Objects.requireNonNull(nextPoint).getLongitude(), nextPoint.getLatitude());
+    }
+
     private Bitmap getPointImage(long pointId) {
         byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
 
@@ -381,7 +470,7 @@ public class MapBoxActivity extends BaseActivity {
 
     }
     @SuppressLint("MissingPermission")
-    private void fetchRoute(List<Point> points) {
+    private void fetchRoute() {
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxActivity.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
@@ -394,15 +483,14 @@ public class MapBoxActivity extends BaseActivity {
                         .degrees(45.0)
                         .build());
 
-                for(int i = 0; i < points.size(); i++) {
-                    bearings.add(null);
-                }
+                bearings.add(null);
 
                 Point origin = Point.fromLngLat(Objects.requireNonNull(location).getLongitude(), location.getLatitude());
-                points.add(origin);
+                Point nextPoint = findNextPoint(origin);
+                List<Point> currentPoints = new ArrayList<>(List.of(nextPoint, origin));
 
                 RouteOptions.Builder builder = RouteOptions.builder()
-                        .coordinatesList(points)
+                        .coordinatesList(currentPoints)
                         .alternatives(false)
                         .profile(DirectionsCriteria.PROFILE_WALKING)
                         .bearingsList(bearings);
@@ -425,6 +513,8 @@ public class MapBoxActivity extends BaseActivity {
 
                     }
                 });
+
+
             }
 
             @Override
@@ -440,5 +530,6 @@ public class MapBoxActivity extends BaseActivity {
         mapboxNavigation.onDestroy();
         mapboxNavigation.unregisterRoutesObserver(routesObserver);
         mapboxNavigation.unregisterLocationObserver(locationObserver);
+        player.stop();
     }
 }

@@ -2,12 +2,14 @@ package ru.project.waygo.login;
 
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
+import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.widget.Toast;
 
@@ -24,9 +26,15 @@ import com.google.firebase.auth.FirebaseAuth;
 import java.util.Objects;
 import java.util.Optional;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
+import ru.project.waygo.dto.user.UserDTO;
 import ru.project.waygo.main.HomeActivity;
+import ru.project.waygo.retrofit.RetrofitConfiguration;
+import ru.project.waygo.retrofit.services.UserService;
 
 public class LoginActivity extends BaseActivity {
 
@@ -34,6 +42,8 @@ public class LoginActivity extends BaseActivity {
     private MaterialButton registrationButton;
     private TextInputEditText passwordField;
     private TextInputEditText emailFields;
+
+    private RetrofitConfiguration retrofit;
 
     private String email;
     private String password;
@@ -57,6 +67,8 @@ public class LoginActivity extends BaseActivity {
         registrationButton = findViewById(R.id.button_registration);
         passwordField = findViewById(R.id.password_field);
         emailFields = findViewById(R.id.email_field);
+
+        retrofit = new RetrofitConfiguration();
 
         addListeners();
     }
@@ -92,7 +104,7 @@ public class LoginActivity extends BaseActivity {
                 auth.signInWithEmailAndPassword(email, password)
                         .addOnSuccessListener(e -> {
                             uid = e.getUser().getUid();
-                            savePreferences();
+                            getUser();
                             logIn();
                         }).addOnFailureListener(e ->
                             Toast.makeText(LoginActivity.this, "Неправильный пароль", Toast.LENGTH_LONG).show()
@@ -107,12 +119,33 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    private void savePreferences() {
+    private void getUser() {
+        UserService service = retrofit.createService(UserService.class);
+        Call<UserDTO> call = service.getByUid(uid);
+        call.enqueue(new Callback<UserDTO>() {
+            @Override
+            public void onResponse(Call<UserDTO> call, Response<UserDTO> response) {
+                if(response.isSuccessful()) {
+                    savePreferences(response.body().getId(), uid);
+                } else {
+                    Log.d("USER_GET_UID", "onResponse: пользователь не найден");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<UserDTO> call, Throwable t) {
+
+            }
+        });
+
+    }
+    private void savePreferences(long id, String uid) {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(PASS_FROM_AUTH_FILE, password);
         editor.putString(EMAIL_FROM_AUTH_FILE, email);
         editor.putString(UID_USER_AUTH_FILE, uid);
+        editor.putString(ID_USER_AUTH_FILE, id + "");
         editor.apply();
     }
 }

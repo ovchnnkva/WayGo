@@ -14,5 +14,7 @@ public interface RouteService {
 
     @GET("api/route/all")
     Call<List<RouteDTO>> getByCityName(@Query("city") String cityName);
-    
+
+    @GET("api/route/point")
+    Call<List<RouteDTO>> getRoutesByPointId(@Query("pointId") long pointId);
 }

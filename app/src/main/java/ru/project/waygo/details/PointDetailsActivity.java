@@ -26,11 +26,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.RoutePhotosFragment;
+import ru.project.waygo.retrofit.RetrofitConfiguration;
+import ru.project.waygo.retrofit.services.RouteService;
 
 public class PointDetailsActivity extends BaseActivity {
 
@@ -41,6 +46,7 @@ public class PointDetailsActivity extends BaseActivity {
     private ImageView generalImage;
     private ToggleButton favorite;
     private long pointId;
+    private RetrofitConfiguration retrofit;
     private List<RouteDTO> routesWithPoint = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +63,7 @@ public class PointDetailsActivity extends BaseActivity {
         descriptionField = findViewById(R.id.descriprion_point);
         generalImage = findViewById(R.id.image_point);
         favorite = findViewById(R.id.toggle_favorite);
+        retrofit = new RetrofitConfiguration();
 
         container = findViewById(R.id.photos_container);
         container.setHasFixedSize(true);
@@ -67,7 +74,12 @@ public class PointDetailsActivity extends BaseActivity {
 
         container.setAdapter(new RoutePhotosAdapter(PointDetailsActivity.this, new ArrayList<>()));
         fillFromIntent();
-        fillRecycleFromCache();
+
+        if(routesWithPoint.isEmpty()) {
+            getRoutesByPointId(pointId);
+        } else {
+            fillRecycleFromCache();
+        }
     }
 
     private void fillFromIntent() {
@@ -83,6 +95,24 @@ public class PointDetailsActivity extends BaseActivity {
         setPointImage();
     }
 
+    private void getRoutesByPointId(long id) {
+        RouteService service = retrofit.createService(RouteService.class);
+        Call<List<RouteDTO>> routes = service.getRoutesByPointId(id);
+
+        routes.enqueue(new Callback<List<RouteDTO>>() {
+            @Override
+            public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
+                if(response.isSuccessful()) {
+                    routesWithPoint = response.body();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
+
+            }
+        });
+    }
     private void fillRecycleFromCache() {
         List<RoutePhotosFragment> fragments = new ArrayList<>();
         routesWithPoint.forEach(route -> {
@@ -100,7 +130,7 @@ public class PointDetailsActivity extends BaseActivity {
     private void setPointImage() {
         byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
 
-        if(bytes != null) {
+        if(bytes != null) { //TODO: добавить получение изображения напрямую после того как будут добавлены изображения к маршрутам
             String base64Photos = new String(bytes, StandardCharsets.UTF_8);
             generalImage.setImageBitmap(getBitmapFromBytes(stringToByte(base64Photos)));
         }
