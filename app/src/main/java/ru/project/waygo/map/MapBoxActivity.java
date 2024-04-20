@@ -85,6 +85,7 @@ import com.smarteist.autoimageslider.SliderView;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -407,14 +408,20 @@ public class MapBoxActivity extends BaseActivity {
             String extraPoints = intent.getStringExtra("points");
             points = getPointsFromExtra(extraPoints);
         }
-        List<PointFragment> fragments = points
-                .stream()
-                .map(point -> new PointFragment(point, getPointImage(point.getId())))
-                .collect(Collectors.toList());
-        List<SliderFragment> images = fragments
-                .stream()
-                .map(fragment -> new SliderFragment(fragment.getImage()))
-                .collect(Collectors.toList());
+        List<SliderFragment> images = new ArrayList<>();
+        if(intent.getBooleanExtra("fromRoute", true)) {
+            images.addAll(points
+                    .stream()
+                    .map(p -> new SliderFragment(getPointImage(p.getId())))
+                    .collect(Collectors.toList()));
+        } else {
+            PointDTO point = points.get(0);
+            List<Bitmap> bitmaps = getPointAllImages(point.getId());
+            images.addAll(bitmaps
+                    .stream()
+                    .map(SliderFragment::new)
+                    .collect(Collectors.toList()));
+        }
 
         fillSlider(images);
 
@@ -452,6 +459,19 @@ public class MapBoxActivity extends BaseActivity {
         }
 
         return getBitmapFromDrawable(getApplicationContext(), R.drawable.location_test);
+    }
+
+    private List<Bitmap> getPointAllImages(long pointId) {
+        byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
+
+        if(bytes != null) {
+            String[] base64Photos = new String(bytes, StandardCharsets.UTF_8).split(";");
+            return Arrays.stream(base64Photos)
+                    .map(s -> getBitmapFromBytes(stringToByte(s)))
+                    .collect(Collectors.toList());
+        }
+
+        return List.of(getBitmapFromDrawable(getApplicationContext(), R.drawable.location_test));
     }
 
     private void fillSlider(List<SliderFragment> fragments) {

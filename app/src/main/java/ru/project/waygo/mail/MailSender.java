@@ -25,7 +25,7 @@ public class MailSender {
         session = Session.getDefaultInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("waygo2023@gmail.com", "loib uget vlhv kble");
+                return new PasswordAuthentication("waygo2023@gmail.com", "dwnj zqus viez tvog");
             }
         });
     }

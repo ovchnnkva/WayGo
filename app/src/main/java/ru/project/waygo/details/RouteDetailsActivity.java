@@ -91,6 +91,7 @@ public class RouteDetailsActivity extends BaseActivity {
             intent.putExtra("name", name.getText().toString());
             intent.putExtra("description", description.getText().toString());
             intent.putExtra("points", pointsExtra);
+            intent.putExtra("fromRoute", true);
             context.startActivity(intent);
         });
     }
