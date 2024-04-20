@@ -71,6 +71,8 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private ArrayAdapter<String> cityAdapter;
     private String cityCurrent;
     private List<LocationFragment> currentRoutes = new ArrayList<>();
+
+    private List<LocationFragment> currentPoints = new ArrayList<>();
     private boolean isExcursion = true;
     @SuppressLint("NonConstantResourceId")
     @Override
@@ -235,13 +237,13 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                     List<PointDTO> points =response.body();
                     response.body().forEach(point -> cacheImages(point.getPhoto(), point.getId(), "point"));
 
-                    List<LocationFragment> fragments = points.stream()
+                    currentPoints = points.stream()
                             .map(point ->
                                     new LocationFragment(point,
                                             getRoutesExtra(getRoutesFragmentIncludePoint(point))))
                             .collect(Collectors.toList());
-                    getFavoritesPointsIds(fragments);
-                    fillRecyclePoint(fragments);
+                    getFavoritesPointsIds(currentPoints);
+
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
@@ -265,6 +267,8 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .filter(p -> response.body().contains(p.getId()))
                             .forEach(p -> p.setFavorite(true));
                 }
+
+                fillRecyclePoint(currentPoints);
             }
 
             @Override
@@ -296,7 +300,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .map(route -> new LocationFragment(route, getPointsExtra(route.getStopsOnRoute())))
                             .collect(Collectors.toList());
                     getFavoritesRoutesIds(currentRoutes);
-                    fillRecyclePoint(currentRoutes);
+
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
@@ -320,6 +324,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .filter(p -> response.body().contains(p.getId()))
                             .forEach(p -> p.setFavorite(true));
                 }
+                fillRecyclePoint(currentRoutes);
             }
 
             @Override
@@ -365,14 +370,15 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             case 0: {
                 isExcursion = true;
                 if(currentRoutes.isEmpty()) getExcursions();
-                else fillRecyclePoint(currentRoutes);
+                else getFavoritesRoutesIds(currentRoutes);
                 break;
             }
             case 1: {
                 isExcursion = false;
-                List<LocationFragment> points = getPointsFromExcursion();
-                if (points.isEmpty()) getPoints();
-                else fillRecyclePoint(points);
+                currentPoints = getPointsFromExcursion();
+                if (currentPoints.isEmpty()) getPoints();
+                else getFavoritesPointsIds(currentPoints);
+
                 break;
             }
         }

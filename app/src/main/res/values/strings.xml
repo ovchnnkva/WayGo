@@ -26,8 +26,18 @@
     <string name="favorites_empty">У вас еще \n нет избранного</string>
     <string name="go_home">Перейти на главную, </string>
     <string name="find_excursion"> чтобы найти подходящую экскурсию</string>
-    <string name="account">Профиль</string>
+    <string name="profile">Профиль</string>
+    <string name="account">Аккаунт</string>
+    <string name="feedback">Обратная связь</string>
+    <string name="subscribe">Подписка</string>
+    <string name="change_pass">Изменить пароль</string>
+    <string name="save_changes">Сохранить изменения</string>
+    <string name="sign_out">Выйти из профиля</string>
+    <string name="theme">Тема</string>
+    <string name="feedback_massege">Ваше сообщение</string>
+    <string name="subscribe_in_development">В разработке</string>
     <string name="end_excursion">Завершить</string>
+    <string name="send">Отправить</string>
     <string name="go_to_next_point">К следующей точке</string>
     <string name="test_location_description_long">Семь «сталинских сестер» — знаменитые высотные здания, которые стали символом Москвы.
         На этой прогулке мы поговорим об истории строительства, сложностях,
