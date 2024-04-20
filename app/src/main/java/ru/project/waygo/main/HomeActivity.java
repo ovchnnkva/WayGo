@@ -234,6 +234,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                           ? citySearch.getText().toString()
                           : "";
         Call<List<PointDTO>> call = pointService.getByCity(cityName);
+        showIndicator(getApplicationContext());
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
@@ -256,6 +257,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             @Override
             public void onFailure(@NonNull Call<List<PointDTO>> call, @NonNull Throwable t) {
                 Log.i("POINT", "onFailure " + t.getLocalizedMessage());
+                hideIndicator();
             }
         });
     }
@@ -271,13 +273,13 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .filter(p -> response.body().contains(p.getId()))
                             .forEach(p -> p.setFavorite(true));
                 }
-
+                hideIndicator();
                 fillRecyclePoint(currentPoints);
             }
 
             @Override
             public void onFailure(Call<List<Long>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
@@ -288,6 +290,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 ? citySearch.getText().toString()
                 : "";
         Call<List<RouteDTO>> call = service.getByCityName(cityName);
+        showIndicator(getApplicationContext());
         call.enqueue(new Callback<List<RouteDTO>>() {
             @Override
             public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
@@ -312,7 +315,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
             @Override
             public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
@@ -328,32 +331,36 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .filter(p -> response.body().contains(p.getId()))
                             .forEach(p -> p.setFavorite(true));
                 }
+                hideIndicator();
                 fillRecyclePoint(currentRoutes);
             }
 
             @Override
             public void onFailure(Call<List<Long>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
     private void getCities(String name) {
         CityService service = retrofit.createService(CityService.class);
         Call<List<String>> call = service.getByName(name);
-
+        showIndicator(getApplicationContext());
         call.enqueue(new Callback<List<String>>() {
             @Override
             public void onResponse(Call<List<String>> call, Response<List<String>> response) {
                 if(response.isSuccessful()) {
+
                     fillCityContainer(response.body());
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
+
+                hideIndicator();
             }
 
             @Override
             public void onFailure(Call<List<String>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
 

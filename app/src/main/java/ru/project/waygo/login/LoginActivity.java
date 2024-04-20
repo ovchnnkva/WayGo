@@ -108,7 +108,7 @@ public class LoginActivity extends BaseActivity {
                             getUser();
                             logIn();
                         }).addOnFailureListener(e ->
-                            Toast.makeText(LoginActivity.this, "Неправильный пароль", Toast.LENGTH_LONG).show()
+                            Toast.makeText(LoginActivity.this, "Неправильный пароль или email", Toast.LENGTH_LONG).show()
                         );
             } else {
                 passwordField.setError("Введите пароль");

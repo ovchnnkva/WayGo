@@ -95,6 +95,8 @@ public class PointDetailsActivity extends BaseActivity {
         } else {
             fillRecycleFromCache();
         }
+
+        setListeners();
     }
 
     private void setListeners() {

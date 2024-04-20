@@ -97,11 +97,10 @@ import ru.project.waygo.R;
 import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
-import ru.project.waygo.fragment.PointFragment;
 
 public class MapBoxActivity extends BaseActivity {
-    MapView mapView;
-    FloatingActionButton focusLocationBtn;
+    private MapView mapView;
+    private FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
@@ -113,6 +112,9 @@ public class MapBoxActivity extends BaseActivity {
     private MaterialButton forwardButton;
     private TextView currentTimeText;
     private TextView allTimeText;
+
+    private TextView nameText;
+    private TextView descriptionText;
     private MediaPlayer player;
     private Handler handler;
     private SeekBar seekBar;
@@ -210,11 +212,17 @@ public class MapBoxActivity extends BaseActivity {
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         slider = findViewById(R.id.slider_map);
+        slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+        slider.setScrollTimeInSec(2);
+        slider.setAutoCycle(true);
+        slider.startAutoCycle();
         playButton = findViewById(R.id.toggle_play);
         backwardButton = findViewById(R.id.button_backward);
         forwardButton = findViewById(R.id.button_forward);
         currentTimeText = findViewById(R.id.current_time);
         allTimeText = findViewById(R.id.all_time);
+        nameText = findViewById(R.id.name_point);
+        descriptionText = findViewById(R.id.descriprion_point);
         seekBar = findViewById(R.id.seek_bar);
         speedAudioButton = findViewById(R.id.toggle_speed);
         layoutPlayer = findViewById(R.id.layout_player);
@@ -277,7 +285,7 @@ public class MapBoxActivity extends BaseActivity {
             AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
             PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
 
-            pointsDto = getPoints();
+            pointsDto = getFromIntent();
             List<Point> points = pointsDto.stream()
                     .map(p -> Point.fromLngLat(Objects.requireNonNull(p).getLongitude(), p.getLatitude()))
                     .collect(Collectors.toList());
@@ -325,10 +333,6 @@ public class MapBoxActivity extends BaseActivity {
         player.setWakeMode(MapBoxActivity.this, PowerManager.PARTIAL_WAKE_LOCK);
         try {
             player.setDataSource(SERVER_URL + "api/point/audio?pointId=" + pointId);
-//            if(player. == 0) {
-//                layoutPlayer.setVisibility(View.GONE);
-//                return;
-//            }
             player.setOnPreparedListener(player -> layoutPlayer.setVisibility(View.VISIBLE));
             player.setOnErrorListener((player, what, extra)  -> {
                 layoutPlayer.setVisibility(View.GONE);
@@ -401,26 +405,30 @@ public class MapBoxActivity extends BaseActivity {
         });
     }
 
-    private List<PointDTO> getPoints() {
+    private List<PointDTO> getFromIntent() {
         Intent intent = getIntent();
         List<PointDTO> points = new ArrayList<>();
+        List<SliderFragment> images = new ArrayList<>();
+
         if(intent != null) {
             String extraPoints = intent.getStringExtra("points");
             points = getPointsFromExtra(extraPoints);
-        }
-        List<SliderFragment> images = new ArrayList<>();
-        if(intent.getBooleanExtra("fromRoute", true)) {
-            images.addAll(points
-                    .stream()
-                    .map(p -> new SliderFragment(getPointImage(p.getId())))
-                    .collect(Collectors.toList()));
-        } else {
-            PointDTO point = points.get(0);
-            List<Bitmap> bitmaps = getPointAllImages(point.getId());
-            images.addAll(bitmaps
-                    .stream()
-                    .map(SliderFragment::new)
-                    .collect(Collectors.toList()));
+            nameText.setText(intent.getStringExtra("name"));
+            descriptionText.setText(intent.getStringExtra("description"));
+
+            if (intent.getBooleanExtra("fromRoute", false)) {
+                images.addAll(points
+                        .stream()
+                        .map(p -> new SliderFragment(getPointImage(p.getId())))
+                        .collect(Collectors.toList()));
+            } else {
+                PointDTO point = points.get(0);
+                List<Bitmap> bitmaps = getPointAllImages(point.getId());
+                images.addAll(bitmaps
+                        .stream()
+                        .map(SliderFragment::new)
+                        .collect(Collectors.toList()));
+            }
         }
 
         fillSlider(images);
