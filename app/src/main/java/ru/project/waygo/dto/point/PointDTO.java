@@ -20,7 +20,7 @@ public class PointDTO {
     private String description;
     private double longitude;
     private double latitude;
-    private String photo;
+    private List<String> photo;
 
     @Override
     public boolean equals(Object o) {

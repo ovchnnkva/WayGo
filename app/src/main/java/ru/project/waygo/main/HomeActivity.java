@@ -41,6 +41,7 @@ import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.project.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.adapter.LocationAdapter;
@@ -74,6 +75,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     private List<LocationFragment> currentPoints = new ArrayList<>();
     private boolean isExcursion = true;
+    private long userId;
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +108,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         bottomNavigationView.setSelectedItemId(R.id.action_main);
 
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            Intent intent;
             switch(item.getItemId())
             {
                 case R.id.action_map:
@@ -122,6 +123,9 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                     finish();
                     return true;
                 case R.id.action_account:
+                    startActivity(new Intent(getApplicationContext(), UserProfileActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
                     return true;
             }
             return false;
@@ -294,7 +298,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                              .forEach(point -> cacheImages(point.getPhoto(), point.getId(), "point"));
 
                         PointDTO generalPoint = route.getStopsOnRoute().get(0);
-                        cacheImages(generalPoint.getPhoto(), route.getId(), "route");
+                        cacheImages(generalPoint.getPhoto().get(0), route.getId(), "route");
                     });
                     currentRoutes = routes.stream()
                             .map(route -> new LocationFragment(route, getPointsExtra(route.getStopsOnRoute())))
@@ -358,7 +362,9 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private void cacheImages(String image, long id, String type) {
         cacheFiles(HomeActivity.this, getFileName(type, id), image);
     }
-
+    private void cacheImages(List<String> image, long id, String type) {
+        cacheFiles(HomeActivity.this, getFileName(type, id), image);
+    }
     private void fillCityContainer(List<String> cities) {
         cityAdapter = new ArrayAdapter<>(this, R.layout.fragment_city_name, R.id.product_name, cities);
         cityListView.setAdapter(cityAdapter);

@@ -7,31 +7,36 @@ import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getRoutesFromExtra;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.smarteist.autoimageslider.SliderView;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
+import ru.project.waygo.SliderFragment;
 import ru.project.waygo.adapter.RoutePhotosAdapter;
+import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.RoutePhotosFragment;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
@@ -43,7 +48,7 @@ public class PointDetailsActivity extends BaseActivity {
 
     private TextView namePointField;
     private TextView descriptionField;
-    private ImageView generalImage;
+    private SliderView slider;
     private ToggleButton favorite;
     private long pointId;
     private RetrofitConfiguration retrofit;
@@ -61,7 +66,11 @@ public class PointDetailsActivity extends BaseActivity {
 
         namePointField = findViewById(R.id.name_point);
         descriptionField = findViewById(R.id.descriprion_point);
-        generalImage = findViewById(R.id.image_point);
+        slider = findViewById(R.id.slider_points);
+        slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+        slider.setScrollTimeInSec(2);
+        slider.setAutoCycle(true);
+        slider.startAutoCycle();
         favorite = findViewById(R.id.toggle_favorite);
         retrofit = new RetrofitConfiguration();
 
@@ -113,6 +122,7 @@ public class PointDetailsActivity extends BaseActivity {
             }
         });
     }
+
     private void fillRecycleFromCache() {
         List<RoutePhotosFragment> fragments = new ArrayList<>();
         routesWithPoint.forEach(route -> {
@@ -131,8 +141,15 @@ public class PointDetailsActivity extends BaseActivity {
         byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
 
         if(bytes != null) { //TODO: добавить получение изображения напрямую после того как будут добавлены изображения к маршрутам
-            String base64Photos = new String(bytes, StandardCharsets.UTF_8);
-            generalImage.setImageBitmap(getBitmapFromBytes(stringToByte(base64Photos)));
+            String[] base64Photos = new String(bytes, StandardCharsets.UTF_8).split(";");
+
+            List<SliderFragment> fragments = Arrays.stream(base64Photos)
+                    .map(s -> new SliderFragment(getBitmapFromBytes(stringToByte(s))))
+                    .collect(Collectors.toList());
+
+            Log.i("ROUTE_DETAILS", "fillSlider: count fragments " + fragments.size());
+            SliderAdapter adapter = new SliderAdapter(PointDetailsActivity.this, fragments);
+            slider.setSliderAdapter(adapter);
         }
     }
 

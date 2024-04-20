@@ -79,6 +79,7 @@ import lombok.var;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.project.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.dto.point.PointDTO;
@@ -189,6 +190,9 @@ public class MapBoxGeneralActivity extends BaseActivity {
                     finish();
                     return true;
                 case R.id.action_account:
+                    startActivity(new Intent(getApplicationContext(), UserProfileActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
                     return true;
             }
             return false;

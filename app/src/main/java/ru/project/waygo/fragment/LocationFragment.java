@@ -54,7 +54,10 @@ public class LocationFragment extends Fragment {
         this.latitude = pointDTO.getLatitude();
         this.description = pointDTO.getDescription();
         this.typeLocation = TypeLocation.POINT;
-        this.images.add(getBitmapFromBytes(stringToByte(pointDTO.getPhoto())));
+        this.images.addAll(pointDTO.getPhoto()
+                .stream()
+                .map(p -> getBitmapFromBytes(stringToByte(p)))
+                .collect(Collectors.toList()));
         this.extra = routeExtra;
     }
 
@@ -67,7 +70,7 @@ public class LocationFragment extends Fragment {
         this.points = routeDTO.getStopsOnRoute();
         this.extra = pointExtra;
         routeDTO.getStopsOnRoute()
-                .forEach(point -> images.add(getBitmapFromBytes(stringToByte(point.getPhoto()))));
+                .forEach(point -> images.add(getBitmapFromBytes(stringToByte(point.getPhoto().get(0)))));
 
     }
 

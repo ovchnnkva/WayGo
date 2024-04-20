@@ -31,6 +31,26 @@ public class CacheUtils {
         }
     }
 
+    public static void cacheFiles(Context context, String fileName, List<String> bytes) {
+        if(bytes == null || bytes.isEmpty()){
+            Log.d("CACHE", "cacheFiles: empty bytes");
+            return;
+        }
+        String bytesStr = String.join(";", bytes);
+        File cacheDir = context.getCacheDir();
+        File file = new File(cacheDir, fileName + ".txt");
+
+        try {
+            file.createNewFile();
+            FileOutputStream outputStream = new FileOutputStream(file);
+            outputStream.write(bytesStr.getBytes());
+            outputStream.close();
+            Log.i("CACHE_SAVE", "cacheFiles: cache save with file name " + fileName);
+        } catch (Exception e) {
+            Log.e("CACHE_SAVE", "cacheFiles: fail cache " + e.getLocalizedMessage());
+        }
+    }
+
     public static byte[] getFileCache(Context context, String fileName) {
         File cacheDir = context.getCacheDir();
         File file = new File(cacheDir, fileName + ".txt");

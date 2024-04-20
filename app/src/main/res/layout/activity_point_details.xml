@@ -23,19 +23,31 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.258" />
 
-    <ImageView
-        android:id="@+id/image_point"
-        android:layout_width="0dp"
+    <com.smarteist.autoimageslider.SliderView
+        android:id="@+id/slider_points"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/background_app"
-        android:contentDescription="@string/app_name"
-        android:src="@drawable/location_test"
+        android:layout_centerInParent="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.40"
+        app:layout_constraintHeight_percent="0.36"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="1.40"
-        android:scaleType="centerCrop"/>
+        app:sliderAnimationDuration="600"
+        app:sliderAutoCycleDirection="back_and_forth"
+        app:sliderIndicatorAnimationDuration="600"
+        app:sliderIndicatorEnabled="true"
+        app:sliderIndicatorGravity="center_horizontal|bottom"
+        app:sliderIndicatorMarginBottom="35dp"
+        app:sliderIndicatorOrientation="horizontal"
+        app:sliderIndicatorPadding="3dp"
+        app:sliderIndicatorRadius="2dp"
+        app:sliderIndicatorSelectedColor="#FFFFFF"
+        app:sliderIndicatorUnselectedColor="@color/stroke_gray"
+        app:sliderScrollTimeInSec="3" >
+
+    </com.smarteist.autoimageslider.SliderView>
+
 
     <ScrollView
         android:id="@+id/scrollView2"
@@ -46,7 +58,7 @@
         android:background="@drawable/substrate_login"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/image_point">
+        app:layout_constraintTop_toTopOf="@+id/slider_points">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

@@ -49,7 +49,7 @@ public class RouteDetailsActivity extends BaseActivity {
     private RecyclerView container;
     private MaterialButton goToExcurssion;
     private String pointsExtra;
-    private long routeId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,7 +97,7 @@ public class RouteDetailsActivity extends BaseActivity {
     }
     private void fillFromIntent() {
         Intent intent = getIntent();
-        routeId = intent.getLongExtra("id", 0);
+        long routeId = intent.getLongExtra("id", 0);
         name.setText(intent.getStringExtra("name"));
         description.setText(intent.getStringExtra("description"));
         length.setText(intent.getStringExtra("length"));
@@ -139,7 +139,7 @@ public class RouteDetailsActivity extends BaseActivity {
         byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
 
         if(bytes != null) {
-            String base64Photos = new String(bytes, StandardCharsets.UTF_8);
+            String base64Photos = new String(bytes, StandardCharsets.UTF_8).split(";")[0];
             return getBitmapFromBytes(stringToByte(base64Photos));
         }
 
