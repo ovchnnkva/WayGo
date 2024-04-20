@@ -93,8 +93,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/account_layout"
-        android:layout_width="409dp"
-        android:layout_height="542dp"
+        android:layout_width="0dp"
+        android:layout_height="540dp"
         android:layout_marginTop="1dp"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
@@ -126,7 +126,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/text_field_transparent_background"
-                android:hint="@string/name"
                 android:inputType="text"
                 android:maxLines="1"
                 android:minHeight="48dp"
@@ -160,7 +159,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/text_field_transparent_background"
-                android:hint="@string/email"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
                 android:minHeight="48dp"
@@ -196,8 +194,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/text_field_transparent_background"
-                android:hint="@string/create_password"
                 android:inputType="textPassword"
+                android:enabled="false"
                 android:maxLines="1"
                 android:minHeight="48dp"
                 android:singleLine="true"
@@ -270,7 +268,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/feedback_layout"
-        android:layout_width="409dp"
+        android:layout_width="0dp"
         android:layout_height="542dp"
         android:layout_marginTop="1dp"
         android:visibility="gone"
@@ -371,7 +369,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/subscribe_layout"
-        android:layout_width="409dp"
+        android:layout_width="0dp"
         android:layout_height="542dp"
         android:layout_marginTop="1dp"
         android:visibility="gone"

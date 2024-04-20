@@ -1,12 +1,9 @@
 package ru.project.waygo.map;
 
-import static android.media.AudioManager.STREAM_SYSTEM;
 import static com.mapbox.maps.plugin.animation.CameraAnimationsUtils.getCamera;
 import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
-import static ru.project.utils.AudioFileUtils.bytesToAudio;
-import static ru.project.utils.AudioFileUtils.getAudioName;
 import static ru.project.utils.Base64Util.stringToByte;
 import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
 import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
@@ -85,7 +82,6 @@ import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 import com.mapbox.turf.TurfMeasurement;
 import com.smarteist.autoimageslider.SliderView;
 
-import java.io.FileDescriptor;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -95,17 +91,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import lombok.var;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
-import ru.project.waygo.SliderFragment;
+import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
-import ru.project.waygo.retrofit.RetrofitConfiguration;
-import ru.project.waygo.retrofit.services.PointService;
 
 public class MapBoxActivity extends BaseActivity {
     MapView mapView;
@@ -456,7 +447,7 @@ public class MapBoxActivity extends BaseActivity {
         byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
 
         if(bytes != null) {
-            String base64Photos = new String(bytes, StandardCharsets.UTF_8);
+            String base64Photos = new String(bytes, StandardCharsets.UTF_8).split(";")[0];
             return getBitmapFromBytes(stringToByte(base64Photos));
         }
 

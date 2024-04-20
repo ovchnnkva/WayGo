@@ -8,6 +8,7 @@ public class Constants {
 
     public static final String ID_USER_AUTH_FILE = "ID_USER";
     public static final String CITY_USER_AUTH_FILE = "CITY_USER";
+    public static final String NAME_USER_AUTH_FILE = "NAME_USER";
     public enum TypeLocation {
         ROUTE,
         POINT

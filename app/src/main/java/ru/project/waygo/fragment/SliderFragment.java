@@ -1,4 +1,4 @@
-package ru.project.waygo;
+package ru.project.waygo.fragment;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;

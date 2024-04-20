@@ -3,6 +3,7 @@ package ru.project.waygo.login;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
+import static ru.project.waygo.Constants.NAME_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
@@ -126,7 +127,7 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void onResponse(Call<UserDTO> call, Response<UserDTO> response) {
                 if(response.isSuccessful()) {
-                    savePreferences(response.body().getId(), uid);
+                    savePreferences(response.body());
                 } else {
                     Log.d("USER_GET_UID", "onResponse: пользователь не найден");
                 }
@@ -139,13 +140,14 @@ public class LoginActivity extends BaseActivity {
         });
 
     }
-    private void savePreferences(long id, String uid) {
+    private void savePreferences(UserDTO userDTO) {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(PASS_FROM_AUTH_FILE, password);
         editor.putString(EMAIL_FROM_AUTH_FILE, email);
-        editor.putString(UID_USER_AUTH_FILE, uid);
-        editor.putString(ID_USER_AUTH_FILE, id + "");
+        editor.putString(UID_USER_AUTH_FILE, userDTO.getUid());
+        editor.putString(ID_USER_AUTH_FILE, userDTO.getId() + "");
+        editor.putString(NAME_USER_AUTH_FILE, userDTO.getName());
         editor.apply();
     }
 }

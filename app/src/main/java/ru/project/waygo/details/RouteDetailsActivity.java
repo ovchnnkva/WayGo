@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -33,7 +32,7 @@ import java.util.stream.Collectors;
 
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
-import ru.project.waygo.SliderFragment;
+import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.PointAdapter;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;

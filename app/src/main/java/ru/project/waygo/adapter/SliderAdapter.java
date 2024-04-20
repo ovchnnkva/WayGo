@@ -8,11 +8,10 @@ import android.widget.ImageView;
 
 import com.smarteist.autoimageslider.SliderViewAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ru.project.waygo.R;
-import ru.project.waygo.SliderFragment;
+import ru.project.waygo.fragment.SliderFragment;
 
 public class SliderAdapter extends SliderViewAdapter<SliderAdapter.SliderAdapterViewHolder> {
     private final List<SliderFragment> mSliderItems;

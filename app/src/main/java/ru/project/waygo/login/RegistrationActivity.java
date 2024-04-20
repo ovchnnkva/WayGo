@@ -3,6 +3,7 @@ package ru.project.waygo.login;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
+import static ru.project.waygo.Constants.NAME_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
@@ -176,6 +177,7 @@ public class RegistrationActivity extends BaseActivity {
         editor.putString(EMAIL_FROM_AUTH_FILE, emailField.getText().toString());
         editor.putString(UID_USER_AUTH_FILE, uid);
         editor.putString(ID_USER_AUTH_FILE, id + "");
+        editor.putString(NAME_USER_AUTH_FILE, nameField.getText().toString());
         editor.apply();
     }
 }

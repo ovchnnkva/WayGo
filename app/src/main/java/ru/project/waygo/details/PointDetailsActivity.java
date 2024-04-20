@@ -7,7 +7,6 @@ import static ru.project.utils.CacheUtils.getFileName;
 import static ru.project.utils.IntentExtraUtils.getRoutesFromExtra;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
@@ -34,7 +33,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
-import ru.project.waygo.SliderFragment;
+import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.route.RouteDTO;
