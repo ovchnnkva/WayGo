@@ -7,6 +7,19 @@
     android:backgroundTintMode="@null"
     tools:context=".map.MapBoxActivity">
 
+    <ProgressBar
+        android:id="@+id/loading"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/app_theme"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.mapbox.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="match_parent"

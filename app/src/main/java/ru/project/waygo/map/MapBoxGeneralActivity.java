@@ -18,6 +18,8 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -96,6 +98,7 @@ public class MapBoxGeneralActivity extends BaseActivity {
     private MapboxNavigation mapboxNavigation;
     private BottomNavigationView bottomNavigationView;
     private RetrofitConfiguration retrofit;
+    private ProgressBar loader;
     private final LocationObserver locationObserver = new LocationObserver() {
         @Override
         public void onNewRawLocation(@NonNull Location location) {
@@ -168,6 +171,8 @@ public class MapBoxGeneralActivity extends BaseActivity {
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         bottomNavigationView = findViewById(R.id.navigation_bar_map);
+        loader = findViewById(R.id.loading);
+
         retrofit = new RetrofitConfiguration();
 
         bottomNavigationView.setSelectedItemId(R.id.action_map);
@@ -264,21 +269,6 @@ public class MapBoxGeneralActivity extends BaseActivity {
         });
     }
 
-//    private List<PointDTO> getPoints() {
-//        Intent intent = getIntent();
-//        List<PointDTO> points = new ArrayList<>();
-//        if(intent != null) {
-//            String extraPoints = intent.getStringExtra("points");
-//            points = getPointsFromExtra(extraPoints);
-//        }
-//        List<PointFragment> fragments = points
-//                .stream()
-//                .map(point -> new PointFragment(point, getPointImage(point.getId())))
-//                .collect(Collectors.toList());
-//
-//        return points;
-//    }
-
     private void getPoints() {
         PointService pointService = retrofit.createService(PointService.class);
         Call<List<PointDTO>> call = pointService.getCoordinatesByCityName(getCity());
@@ -329,6 +319,7 @@ public class MapBoxGeneralActivity extends BaseActivity {
 
     @SuppressLint("MissingPermission")
     private void fetchRoute(List<Point> points) {
+        showIndicator();
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxGeneralActivity.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
@@ -369,16 +360,24 @@ public class MapBoxGeneralActivity extends BaseActivity {
 
                     @Override
                     public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
-
+                        hideIndicator();
                     }
                 });
             }
 
             @Override
             public void onFailure(@NonNull Exception exception) {
-
+                hideIndicator();
             }
         });
+    }
+
+    protected void showIndicator() {
+        loader.setVisibility(View.VISIBLE);
+    }
+
+    protected void hideIndicator() {
+        loader.setVisibility(View.INVISIBLE);
     }
 
     @Override

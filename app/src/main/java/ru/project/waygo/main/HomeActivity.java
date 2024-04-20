@@ -22,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 
 import androidx.activity.EdgeToEdge;
@@ -81,6 +82,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private ConstraintLayout emptyLayout;
 
     private ProgressDialog dialog;
+    private ProgressBar loader;
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +102,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         locationSearch = findViewById(R.id.edit_search_location);
         cityListView = findViewById(R.id.city_container);
         citySearch = findViewById(R.id.search_country);
+        loader = findViewById(R.id.loading);
 
         retrofit = new RetrofitConfiguration();
 
@@ -243,7 +246,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                           ? citySearch.getText().toString()
                           : "";
         Call<List<PointDTO>> call = pointService.getByCity(cityName);
-        showIndicator(getApplicationContext());
+        showIndicator();
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
@@ -300,7 +303,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 ? citySearch.getText().toString()
                 : "";
         Call<List<RouteDTO>> call = service.getByCityName(cityName);
-        showIndicator(getApplicationContext());
+        showIndicator();
         call.enqueue(new Callback<List<RouteDTO>>() {
             @Override
             public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
@@ -355,7 +358,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private void getCities(String name) {
         CityService service = retrofit.createService(CityService.class);
         Call<List<String>> call = service.getByName(name);
-        showIndicator(getApplicationContext());
+        showIndicator();
         call.enqueue(new Callback<List<String>>() {
             @Override
             public void onResponse(Call<List<String>> call, Response<List<String>> response) {
@@ -431,15 +434,11 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     }
 
-    protected void showIndicator(Context context) {
-        dialog = new ProgressDialog(context);
-        dialog.show();
+    protected void showIndicator() {
+        loader.setVisibility(View.VISIBLE);
     }
 
     protected void hideIndicator() {
-        if(dialog != null) {
-            dialog.dismiss();
-        }
-        dialog = null;
+        loader.setVisibility(View.INVISIBLE);
     }
 }

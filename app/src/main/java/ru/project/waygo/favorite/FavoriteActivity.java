@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import androidx.activity.EdgeToEdge;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -55,6 +56,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     private List<LocationFragment> currentPoint = new ArrayList<>();
     private ConstraintLayout emptyLayout;
     private MaterialButton goHomeButton;
+    private ProgressBar loader;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +71,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
         tabLayout = findViewById(R.id.tab_layout);
         emptyLayout = findViewById(R.id.empty_layout);
         goHomeButton = findViewById(R.id.go_home);
+        loader = findViewById(R.id.loading);
 
         tabLayout.setOnTabSelectedListener(this);
 
@@ -116,6 +119,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
         UserService service = retrofit.createService(UserService.class);
 
         Call<Set<RouteDTO>> call = service.getFavoriteRoutes(getUserId());
+        showIndicator();
         call.enqueue(new Callback<Set<RouteDTO>>() {
             @Override
             public void onResponse(Call<Set<RouteDTO>> call, Response<Set<RouteDTO>> response) {
@@ -135,11 +139,12 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
+                hideIndicator();
             }
 
             @Override
             public void onFailure(Call<Set<RouteDTO>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
@@ -181,18 +186,19 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     private void getRouteByPoint(long id, Set<RouteDTO> pointRoutes) {
         RouteService service = retrofit.createService(RouteService.class);
         Call<List<RouteDTO>> routes = service.getRoutesByPointId(id);
-
+        showIndicator();
         routes.enqueue(new Callback<List<RouteDTO>>() {
             @Override
             public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
                 if(response.isSuccessful()) {
                     pointRoutes.addAll(response.body());
                 }
+                hideIndicator();
             }
 
             @Override
             public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
@@ -238,5 +244,14 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
 
+    }
+
+
+    protected void showIndicator() {
+        loader.setVisibility(View.VISIBLE);
+    }
+
+    protected void hideIndicator() {
+        loader.setVisibility(View.INVISIBLE);
     }
 }

@@ -27,6 +27,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -120,6 +121,7 @@ public class MapBoxActivity extends BaseActivity {
     private MediaPlayer player;
     private Handler handler;
     private SeekBar seekBar;
+    private ProgressBar loader;
     private ToggleButton speedAudioButton;
     private MaterialButton nextPointButton;
     private List<PointDTO> pointsDto;
@@ -227,6 +229,7 @@ public class MapBoxActivity extends BaseActivity {
         nameText = findViewById(R.id.name_point);
         descriptionText = findViewById(R.id.descriprion_point);
         seekBar = findViewById(R.id.seek_bar);
+        loader = findViewById(R.id.loading);
         speedAudioButton = findViewById(R.id.toggle_speed);
         layoutPlayer = findViewById(R.id.layout_player);
         nextPointButton = findViewById(R.id.button_next_point);
@@ -500,6 +503,7 @@ public class MapBoxActivity extends BaseActivity {
     }
     @SuppressLint("MissingPermission")
     private void fetchRoute() {
+        showIndicator();
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxActivity.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
@@ -539,7 +543,7 @@ public class MapBoxActivity extends BaseActivity {
 
                     @Override
                     public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
-
+                        hideIndicator();
                     }
                 });
 
@@ -548,9 +552,17 @@ public class MapBoxActivity extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Exception exception) {
-
+                hideIndicator();
             }
         });
+    }
+
+    protected void showIndicator() {
+        loader.setVisibility(View.VISIBLE);
+    }
+
+    protected void hideIndicator() {
+        loader.setVisibility(View.INVISIBLE);
     }
 
     @Override
