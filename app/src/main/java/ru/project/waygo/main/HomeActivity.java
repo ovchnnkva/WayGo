@@ -9,6 +9,8 @@ import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -24,6 +26,7 @@ import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -75,7 +78,9 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     private List<LocationFragment> currentPoints = new ArrayList<>();
     private boolean isExcursion = true;
-    private long userId;
+    private ConstraintLayout emptyLayout;
+
+    private ProgressDialog dialog;
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +92,10 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        dialog = new ProgressDialog(getApplicationContext());
         recyclerView = findViewById(R.id.location_container);
         tabLayout = findViewById(R.id.tab_layout);
+        emptyLayout = findViewById(R.id.empty_layout);
         tabLayout.setOnTabSelectedListener(this);
         locationSearch = findViewById(R.id.edit_search_location);
         cityListView = findViewById(R.id.city_container);
@@ -213,6 +220,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     private void fillRecyclePoint(List<LocationFragment> fragments) {
+        emptyLayout.setVisibility(View.INVISIBLE);
         LocationAdapter adapter = new LocationAdapter(HomeActivity.this, fragments, getUserId());
         recyclerView.setAdapter(adapter);
         cityListView.setVisibility(View.VISIBLE);
@@ -252,6 +260,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    emptyLayout.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -311,6 +320,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    emptyLayout.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -419,5 +429,17 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
 
+    }
+
+    protected void showIndicator(Context context) {
+        dialog = new ProgressDialog(context);
+        dialog.show();
+    }
+
+    protected void hideIndicator() {
+        if(dialog != null) {
+            dialog.dismiss();
+        }
+        dialog = null;
     }
 }

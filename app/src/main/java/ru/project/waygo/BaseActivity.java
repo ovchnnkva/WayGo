@@ -16,23 +16,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 public class BaseActivity extends AppCompatActivity {
-    private ProgressDialog dialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
     }
 
-    protected void showIndicator(Context context) {
-        dialog = new ProgressDialog(context);
-        dialog.show();
-    }
-
-    protected void hideIndicator() {
-        if(dialog != null) {
-            dialog.dismiss();
-        }
-        dialog = null;
-    }
 }

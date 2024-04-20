@@ -97,6 +97,7 @@ import ru.project.waygo.R;
 import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
+import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.rating.RatingActivity;
 
 public class MapBoxActivity extends BaseActivity {
@@ -123,7 +124,7 @@ public class MapBoxActivity extends BaseActivity {
     private MaterialButton nextPointButton;
     private List<PointDTO> pointsDto;
     private long routeId;
-
+    private boolean isFromRoute;
     private ConstraintLayout layoutPlayer;
 
     private final Runnable updateSongTime = new Runnable() {
@@ -306,10 +307,12 @@ public class MapBoxActivity extends BaseActivity {
             nextPointButton.setOnClickListener(view -> {
                 if(!pointsDto.isEmpty()) {
                     fetchRoute();
-                } else {
+                } else if(isFromRoute){
                     Intent intent = new Intent(getApplicationContext(), RatingActivity.class);
                     intent.putExtra("routeId", routeId);
                     startActivity(intent);
+                } else {
+                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                 }
             });
             focusLocationBtn.setOnClickListener(view -> {
@@ -421,8 +424,8 @@ public class MapBoxActivity extends BaseActivity {
             points = getPointsFromExtra(extraPoints);
             nameText.setText(intent.getStringExtra("name"));
             descriptionText.setText(intent.getStringExtra("description"));
-
-            if (intent.getBooleanExtra("fromRoute", false)) {
+            isFromRoute = intent.getBooleanExtra("fromRoute", false);
+            if (isFromRoute) {
                 routeId = intent.getLongExtra("routeId", 0);
                 images.addAll(points
                         .stream()
