@@ -1,18 +1,21 @@
-package ru.project.user_profile;
+package ru.project.waygo.user_profile;
 
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
-import static ru.project.waygo.Constants.NAME_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -24,16 +27,23 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.ActionCodeSettings;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import ru.project.waygo.R;
 import ru.project.waygo.dto.user.UserDTO;
+import ru.project.waygo.favorite.FavoriteActivity;
+import ru.project.waygo.mail.MailSender;
+import ru.project.waygo.mail.MailSenderAsync;
+import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.main.MainActivity;
+import ru.project.waygo.map.MapBoxGeneralActivity;
 
 public class UserProfileActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
     private ConstraintLayout accountLayout;
@@ -42,11 +52,15 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
     private TextInputEditText nameField;
     private TextInputEditText emailField;
     private TextInputEditText passwordField;
+    private TextInputEditText themeFeedbackField;
+    private TextInputEditText messageFeedbackField;
     private TabLayout tabLayout;
 
     private MaterialButton signOutButton;
     private MaterialButton saveChanges;
+    private MaterialButton sendFeedbackButton;
     private UserDTO userDTO;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,11 +78,41 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
         nameField = findViewById(R.id.name_field);
         emailField = findViewById(R.id.email_field);
         passwordField = findViewById(R.id.password_field);
+        themeFeedbackField = findViewById(R.id.theme_field);
+        messageFeedbackField = findViewById(R.id.message_field);
         signOutButton = findViewById(R.id.button_sign_out);
         saveChanges = findViewById(R.id.button_save);
+        sendFeedbackButton = findViewById(R.id.button_send_feedback);
         tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setOnTabSelectedListener(this);
+        BottomNavigationView bottomNavigationView=findViewById(R.id.navigation_bar);
 
+        // Set Home selected
+        bottomNavigationView.setSelectedItemId(R.id.action_account);
+
+        bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
+            switch(item.getItemId())
+            {
+                case R.id.action_map:
+                    startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
+                    return true;
+                case R.id.action_main:
+                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
+                    return true;
+                case R.id.action_favorites:
+                    startActivity(new Intent(getApplicationContext(), FavoriteActivity.class));
+                    overridePendingTransition(0,0);
+                    finish();
+                    return true;
+                case R.id.action_account:
+                    return true;
+            }
+            return false;
+        });
         fillFromPreferences();
         setListeners();
     }
@@ -81,13 +125,19 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         });
-
-        nameField.addTextChangedListener(new TextWatcher() {
+        
+        TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-               if(!nameField.getText().toString().equals(userDTO.getName())) {
-                   saveChanges.setTextColor(getResources().getColor(R.color.white));
-               }
+                if(isUserDataNotEmpty() && (isUpdateUserName() || isUpdateUserEmail())) {
+                    saveChanges.setTextColor(getResources().getColor(R.color.white));
+                    saveChanges.getBackground().setColorFilter(Color.parseColor("#7A67FE"), PorterDuff.Mode.MULTIPLY);
+                    saveChanges.setEnabled(true);
+                } else {
+                    saveChanges.setTextColor(getResources().getColor(R.color.black));
+                    saveChanges.getBackground().setColorFilter(Color.parseColor("#DDDDDD"), PorterDuff.Mode.MULTIPLY);
+                    saveChanges.setEnabled(false);
+                }
             }
 
             @Override
@@ -99,7 +149,57 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
             public void afterTextChanged(Editable editable) {
 
             }
+        };
+        
+        nameField.addTextChangedListener(textWatcher);
+        emailField.addTextChangedListener(textWatcher);
+        
+        saveChanges.setOnClickListener(view -> {
+            if(isUpdateUserEmail()) {
+                fireBaseUpdateEmail();
+            }
         });
+
+        sendFeedbackButton.setOnClickListener(view -> sendFeedback());
+    }
+    
+    private void fireBaseUpdateEmail() {
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        AuthCredential credential = EmailAuthProvider.getCredential(userDTO.getEmail(), getPassFromPreferences());
+
+        firebaseUser.reauthenticate(credential)
+                .addOnCompleteListener(task -> {
+                    Log.d("FIREBASE_CHANGE_PASS", "onComplete: user reauth");
+                    firebaseUser.updateEmail(emailField.getText().toString()).addOnCompleteListener(task1 -> {
+                        if(task1.isSuccessful()) {
+                            Toast.makeText(UserProfileActivity.this, "Почта успешно изменена", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+    }
+
+    private void sendFeedback() {
+        if(themeFeedbackField.getText() != null || messageFeedbackField.getText() != null){
+            MailSenderAsync mailSenderAsync = new MailSenderAsync(themeFeedbackField.getText().toString(),
+                    messageFeedbackField.getText().toString(), userDTO.getEmail());
+
+            mailSenderAsync.execute();
+            themeFeedbackField.setText("");
+            messageFeedbackField.setText("");
+        }
+    }
+    private boolean isUserDataNotEmpty() {
+        return nameField.getText() != null 
+                || !nameField.getText().toString().equals("")
+                || emailField.getText() != null
+                || !emailField.getText().toString().equals("");
+    }
+    private boolean isUpdateUserName() {
+        return !nameField.getText().equals(userDTO.getName());
+    }
+
+    private boolean isUpdateUserEmail() {
+        return !emailField.getText().toString().equals(userDTO.getEmail());
     }
     private void sendVerificationEmail()
     {
@@ -179,6 +279,11 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
         nameField.setText(userDTO.getName());
         emailField.setText(userDTO.getEmail());
         passwordField.setText(preferences.getString(PASS_FROM_AUTH_FILE,""));
+    }
+    
+    private String getPassFromPreferences() {
+        SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
+        return preferences.getString(PASS_FROM_AUTH_FILE,"");
     }
 
     private void clearPreferences() {

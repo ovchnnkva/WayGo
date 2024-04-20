@@ -4,7 +4,7 @@ import static com.mapbox.maps.plugin.animation.CameraAnimationsUtils.getCamera;
 import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
-import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromDrawable;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
 
@@ -66,10 +66,8 @@ import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
-import com.mapbox.turf.TurfMeasurement;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -79,7 +77,7 @@ import lombok.var;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.project.user_profile.UserProfileActivity;
+import ru.project.waygo.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.dto.point.PointDTO;

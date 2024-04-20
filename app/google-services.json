@@ -1,34 +1,42 @@
 {
   "project_info": {
-    "project_number": "363239095642",
-    "firebase_url": "https://studentsystemapp-default-rtdb.firebaseio.com",
-    "project_id": "studentsystemapp",
-    "storage_bucket": "studentsystemapp.appspot.com"
+    "project_number": "1023888172229",
+    "firebase_url": "https://waygodb-9ccc6-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "waygodb-9ccc6",
+    "storage_bucket": "waygodb-9ccc6.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:363239095642:android:91c4ae3f06a449cbe90763",
+        "mobilesdk_app_id": "1:1023888172229:android:2c673f5347f4d7b32c3cac",
         "android_client_info": {
-          "package_name": "ru.project.waygo"
+          "package_name": "com.WayGo.WayGo"
         }
       },
       "oauth_client": [
         {
-          "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+          "client_id": "1023888172229-qkkkgof17be0rs87qnqpru838ado08fd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.WayGo.WayGo",
+            "certificate_hash": "8222149d70344017750f717cd52bc94c67b5164a"
+          }
+        },
+        {
+          "client_id": "1023888172229-hmuco84ko4q9dldd659bfcquuivd0bpe.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDTQ0PHbTgmLayGOR0VLsGz8pQWNY4AhU4"
+          "current_key": "AIzaSyAQidOZq7ROESszzHYYnfK_CgwTL69_NhI"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+              "client_id": "1023888172229-hmuco84ko4q9dldd659bfcquuivd0bpe.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
@@ -37,35 +45,35 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:363239095642:android:affe526abfa2a158e90763",
+        "mobilesdk_app_id": "1:1023888172229:android:55bb6470e0724b022c3cac",
         "android_client_info": {
-          "package_name": "ru.sfedu.studentsystem"
+          "package_name": "ru.project.waygo"
         }
       },
       "oauth_client": [
         {
-          "client_id": "363239095642-okmhs2g10oq4egc0emo937b8tp3q2kd7.apps.googleusercontent.com",
+          "client_id": "1023888172229-7rokcikk48v6nep23steu1se1e3103a1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "ru.sfedu.studentsystem",
+            "package_name": "ru.project.waygo",
             "certificate_hash": "863e8aa93d9f5d0c634fd20826d594cba2fe3e26"
           }
         },
         {
-          "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+          "client_id": "1023888172229-hmuco84ko4q9dldd659bfcquuivd0bpe.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDTQ0PHbTgmLayGOR0VLsGz8pQWNY4AhU4"
+          "current_key": "AIzaSyAQidOZq7ROESszzHYYnfK_CgwTL69_NhI"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "363239095642-cta5rtm3v8gdhr97ptt0t7jpi5n24e7t.apps.googleusercontent.com",
+              "client_id": "1023888172229-hmuco84ko4q9dldd659bfcquuivd0bpe.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

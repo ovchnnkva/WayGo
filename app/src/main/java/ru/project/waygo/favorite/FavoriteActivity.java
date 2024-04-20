@@ -1,11 +1,9 @@
 package ru.project.waygo.favorite;
 
-import static ru.project.utils.CacheUtils.cacheFiles;
-import static ru.project.utils.CacheUtils.getFileName;
-import static ru.project.utils.IntentExtraUtils.getPointsExtra;
-import static ru.project.utils.IntentExtraUtils.getRoutesExtra;
+import static ru.project.waygo.utils.CacheUtils.cacheFiles;
+import static ru.project.waygo.utils.CacheUtils.getFileName;
+import static ru.project.waygo.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
-import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
 import android.content.Intent;
@@ -25,7 +23,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,7 +32,7 @@ import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import ru.project.user_profile.UserProfileActivity;
+import ru.project.waygo.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.adapter.LocationAdapter;

@@ -1,11 +1,11 @@
 package ru.project.waygo.details;
 
-import static ru.project.utils.Base64Util.stringToByte;
-import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
-import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
-import static ru.project.utils.CacheUtils.getFileCache;
-import static ru.project.utils.CacheUtils.getFileName;
-import static ru.project.utils.IntentExtraUtils.getPointsFromExtra;
+import static ru.project.waygo.utils.Base64Util.stringToByte;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromBytes;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromDrawable;
+import static ru.project.waygo.utils.CacheUtils.getFileCache;
+import static ru.project.waygo.utils.CacheUtils.getFileName;
+import static ru.project.waygo.utils.IntentExtraUtils.getPointsFromExtra;
 
 import android.content.Context;
 import android.content.Intent;

@@ -1,6 +1,6 @@
 package ru.project.waygo.adapter;
 
-import static ru.project.utils.BitMapUtils.getBitmapFromDrawable;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromDrawable;
 
 import android.content.Context;
 import android.content.Intent;

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_app"
-    tools:context="ru.project.user_profile.UserProfileActivity">
+    tools:context=".user_profile.UserProfileActivity">
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tab_layout"
@@ -235,8 +235,9 @@
             android:minHeight="48dp"
             android:text="@string/save_changes"
             android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-            android:textColor="@color/white"
-            app:backgroundTint="@color/app_theme"
+            android:textColor="@color/black"
+            app:backgroundTint="@color/stroke_gray"
+            android:enabled="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.09"

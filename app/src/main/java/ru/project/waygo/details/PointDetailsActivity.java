@@ -1,10 +1,10 @@
 package ru.project.waygo.details;
 
-import static ru.project.utils.Base64Util.stringToByte;
-import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
-import static ru.project.utils.CacheUtils.getFileCache;
-import static ru.project.utils.CacheUtils.getFileName;
-import static ru.project.utils.IntentExtraUtils.getRoutesFromExtra;
+import static ru.project.waygo.utils.Base64Util.stringToByte;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromBytes;
+import static ru.project.waygo.utils.CacheUtils.getFileCache;
+import static ru.project.waygo.utils.CacheUtils.getFileName;
+import static ru.project.waygo.utils.IntentExtraUtils.getRoutesFromExtra;
 
 import android.content.Intent;
 import android.os.Bundle;

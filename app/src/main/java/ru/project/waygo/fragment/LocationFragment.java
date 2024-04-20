@@ -1,12 +1,10 @@
 package ru.project.waygo.fragment;
 
-import static ru.project.utils.Base64Util.stringToByte;
-import static ru.project.utils.BitMapUtils.getBitmapFromBytes;
+import static ru.project.waygo.utils.Base64Util.stringToByte;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromBytes;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 
-import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;

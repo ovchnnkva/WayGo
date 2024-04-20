@@ -1,4 +1,4 @@
-package ru.project.utils;
+package ru.project.waygo.utils;
 
 import android.util.Log;
 
