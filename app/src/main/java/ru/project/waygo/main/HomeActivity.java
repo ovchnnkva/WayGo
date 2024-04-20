@@ -215,6 +215,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private void fillRecyclePoint(List<LocationFragment> fragments) {
         LocationAdapter adapter = new LocationAdapter(HomeActivity.this, fragments, getUserId());
         recyclerView.setAdapter(adapter);
+        cityListView.setVisibility(View.VISIBLE);
     }
 
     private List<LocationFragment> getPointsFromExcursion() {

@@ -7,4 +7,5 @@
     <color name="stroke_gray">#DDDDDD</color>
     <color name="text_gray">#8F9098</color>
     <color name="background_gray">#EDEDED</color>
+    <color name="starts_color">#FFC100</color>
 </resources>

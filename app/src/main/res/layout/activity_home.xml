@@ -38,11 +38,11 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.90"
+        app:layout_constraintHeight_percent="0.92"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_country"
-        app:layout_constraintVertical_bias="0.526" />
+        app:layout_constraintVertical_bias="0.909" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/location_container"

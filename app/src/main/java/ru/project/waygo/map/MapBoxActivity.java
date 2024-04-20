@@ -97,6 +97,7 @@ import ru.project.waygo.R;
 import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.point.PointDTO;
+import ru.project.waygo.rating.RatingActivity;
 
 public class MapBoxActivity extends BaseActivity {
     private MapView mapView;
@@ -121,6 +122,7 @@ public class MapBoxActivity extends BaseActivity {
     private ToggleButton speedAudioButton;
     private MaterialButton nextPointButton;
     private List<PointDTO> pointsDto;
+    private long routeId;
 
     private ConstraintLayout layoutPlayer;
 
@@ -304,6 +306,10 @@ public class MapBoxActivity extends BaseActivity {
             nextPointButton.setOnClickListener(view -> {
                 if(!pointsDto.isEmpty()) {
                     fetchRoute();
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), RatingActivity.class);
+                    intent.putExtra("routeId", routeId);
+                    startActivity(intent);
                 }
             });
             focusLocationBtn.setOnClickListener(view -> {
@@ -417,6 +423,7 @@ public class MapBoxActivity extends BaseActivity {
             descriptionText.setText(intent.getStringExtra("description"));
 
             if (intent.getBooleanExtra("fromRoute", false)) {
+                routeId = intent.getLongExtra("routeId", 0);
                 images.addAll(points
                         .stream()
                         .map(p -> new SliderFragment(getPointImage(p.getId())))

@@ -21,6 +21,10 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".rating.RatingActivity"
+            android:exported="false"
+            android:noHistory="true"/>
+        <activity
             android:name=".user_profile.ChangePasswordActivity"
             android:exported="false" />
         <activity

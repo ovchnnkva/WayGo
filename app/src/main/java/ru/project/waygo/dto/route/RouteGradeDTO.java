@@ -10,4 +10,8 @@ import lombok.NoArgsConstructor;
 public class RouteGradeDTO {
     private long id;
     private int grade;
+
+    public RouteGradeDTO(int grade) {
+        this.grade = grade;
+    }
 }
