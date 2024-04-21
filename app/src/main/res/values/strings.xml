@@ -2,6 +2,7 @@
     <string name="app_name">WayGO</string>
     <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">sk.eyJ1Ijoib3ZjaG5ua3ZhIiwiYSI6ImNsdGp5NnR5YjBwcnQyam8xd3NqMnBmdzkifQ.hYhw7oPWf4voNEABVbm2RA</string>
     <string name="login">Войти</string>
+    <string name="clear">Очистить</string>
     <string name="registration_question">Ещё не зарегистрированы?</string>
     <string name="registration">Регистрация</string>
     <string name="register">Зарегистрироваться</string>
@@ -23,6 +24,8 @@
     <string name="main">Главная</string>
     <string name="map">Карта</string>
     <string name="favorites">Избранное</string>
+    <string name="arConfirm">Вы хотите загрузить модель </string>
+    <string name="arContinue">\nПродолжить?</string>
     <string name="favorites_empty">У вас еще \n нет избранного</string>
     <string name="go_home">Перейти на главную, </string>
     <string name="find_excursion"> чтобы найти подходящую экскурсию</string>

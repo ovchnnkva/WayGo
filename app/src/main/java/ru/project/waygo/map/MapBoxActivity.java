@@ -95,6 +95,7 @@ import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
+import ru.project.waygo.ar.ArActivity;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.PointFragment;
 
@@ -110,6 +111,8 @@ public class MapBoxActivity extends BaseActivity {
     private ToggleButton playButton;
     private MaterialButton backwardButton;
     private MaterialButton forwardButton;
+
+    private MaterialButton arButton;
     private TextView currentTimeText;
     private TextView allTimeText;
     private MediaPlayer player;
@@ -210,8 +213,10 @@ public class MapBoxActivity extends BaseActivity {
         focusLocationBtn = findViewById(R.id.focusLocation);
         slider = findViewById(R.id.slider_map);
         playButton = findViewById(R.id.toggle_play);
+
         backwardButton = findViewById(R.id.button_backward);
         forwardButton = findViewById(R.id.button_forward);
+        arButton = findViewById(R.id.ar_button);
         currentTimeText = findViewById(R.id.current_time);
         allTimeText = findViewById(R.id.all_time);
         seekBar = findViewById(R.id.seek_bar);
@@ -301,6 +306,12 @@ public class MapBoxActivity extends BaseActivity {
                 focusLocation = true;
                 getGestures(mapView).addOnMoveListener(onMoveListener);
                 focusLocationBtn.hide();
+            });
+
+            arButton.setOnClickListener(view -> {
+                Intent intent = new Intent(this, ArActivity.class);
+                intent.putExtra("pointId",pointsDto.get(0).getId());
+                startActivity(intent);
             });
 
             locationComponentPlugin.addOnIndicatorPositionChangedListener(point -> {
