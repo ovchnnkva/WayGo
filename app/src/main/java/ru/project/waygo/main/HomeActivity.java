@@ -10,7 +10,6 @@ import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -407,9 +406,14 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 currentPoints = getPointsFromExcursion();
                 if (currentPoints.isEmpty()) getPoints();
                 else getFavoritesPointsIds(currentPoints);
-
                 break;
             }
+        }
+    }
+
+    private void setEnableTab(boolean disable) {
+        for(View view:tabLayout.getTouchables()) {
+            view.setEnabled(disable);
         }
     }
 
@@ -439,10 +443,12 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     protected void showIndicator() {
         tabLayout.setEnabled(false);
         loader.setVisibility(View.VISIBLE);
+        setEnableTab(false);
     }
 
     protected void hideIndicator() {
         tabLayout.setEnabled(true);
         loader.setVisibility(View.INVISIBLE);
+        setEnableTab(true);
     }
 }
