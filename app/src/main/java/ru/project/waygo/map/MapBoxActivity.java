@@ -18,6 +18,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
@@ -79,6 +80,7 @@ import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 import com.mapbox.turf.TurfMeasurement;
 import com.smarteist.autoimageslider.SliderView;
@@ -235,8 +237,14 @@ public class MapBoxActivity extends BaseActivity {
         nextPointButton = findViewById(R.id.button_next_point);
         player = new MediaPlayer();
 
+        RouteLineColorResources colorResources = new RouteLineColorResources.Builder()
+                .routeDefaultColor(Color.parseColor("#7A67FE"))
+                .build();
+
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this)
-                .withRouteLineResources(new RouteLineResources.Builder().build())
+                .withRouteLineResources(new RouteLineResources.Builder()
+                        .routeLineColorResources(colorResources)
+                        .build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER)
                 .build();
 
@@ -313,8 +321,11 @@ public class MapBoxActivity extends BaseActivity {
                 } else if(isFromRoute){
                     Intent intent = new Intent(getApplicationContext(), RatingActivity.class);
                     intent.putExtra("routeId", routeId);
+                    intent.putExtra("name", nameText.getText().toString());
+                    playerStop();
                     startActivity(intent);
                 } else {
+                    playerStop();
                     startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                 }
             });
@@ -329,6 +340,12 @@ public class MapBoxActivity extends BaseActivity {
                 routeLineView.renderRouteLineUpdate(style, result);
             });
         });
+    }
+
+    private void playerStop() {
+        if(player.isPlaying()) {
+            player.stop();
+        }
     }
 
     @SuppressLint("DefaultLocale")
@@ -525,6 +542,8 @@ public class MapBoxActivity extends BaseActivity {
                 RouteOptions.Builder builder = RouteOptions.builder()
                         .coordinatesList(currentPoints)
                         .alternatives(false)
+                        .steps(true)
+                        .overview(DirectionsCriteria.OVERVIEW_FULL)
                         .profile(DirectionsCriteria.PROFILE_WALKING)
                         .bearingsList(bearings);
                 applyDefaultNavigationOptions(builder);

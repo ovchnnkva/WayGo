@@ -1,7 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">WayGO</string>
     <string name="project_mail">waygo2023@gmail.com</string>
-    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">sk.eyJ1Ijoib3ZjaG5ua3ZhIiwiYSI6ImNsdGp5NnR5YjBwcnQyam8xd3NqMnBmdzkifQ.hYhw7oPWf4voNEABVbm2RA</string>
+    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">sk.eyJ1Ijoid2F5Z283NzciLCJhIjoiY2x2OThydnhrMHRrYjJranp3MDRmOXM0diJ9.btMEWCjXrW5q3H0FU9ODww</string>
     <string name="login">Войти</string>
     <string name="registration_question">Ещё не зарегистрированы?</string>
     <string name="registration">Регистрация</string>

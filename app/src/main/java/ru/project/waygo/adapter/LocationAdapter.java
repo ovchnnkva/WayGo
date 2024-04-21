@@ -82,6 +82,8 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             intent.putExtra("id", fragment.getLocationId());
             intent.putExtra("name", fragment.getName());
             intent.putExtra("description", fragment.getDescription());
+            intent.putExtra("latitude", fragment.getLatitude());
+            intent.putExtra("longitude", fragment.getLongitude());
             intent.putExtra("favorite", fragment.isFavorite());
             intent.putExtra("routes", fragment.getExtra());
 

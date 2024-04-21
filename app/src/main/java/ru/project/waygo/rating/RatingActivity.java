@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.RatingBar;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,7 +32,8 @@ public class RatingActivity extends AppCompatActivity {
     private RetrofitConfiguration retrofit;
     private RatingBar ratingBar;
     private MaterialButton closeButton;
-
+    private TextView nameExcursion;
+    private String nameString = "Экскурсия \"%s\" завершена";
     private long routeId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class RatingActivity extends AppCompatActivity {
         ratingBar = findViewById(R.id.ratingBar);
         closeButton = findViewById(R.id.close_button);
 
-        setRouteId();
+        fillFromIntent();
         setListeners();
     }
 
@@ -76,9 +78,10 @@ public class RatingActivity extends AppCompatActivity {
         });
     }
 
-    private void setRouteId() {
+    private void fillFromIntent() {
         Intent intent = getIntent();
         routeId = intent.getLongExtra("routeId", 0);
+        nameExcursion.setText(String.format(nameString, intent.getStringExtra("name")));
     }
 
     private long getUserId() {

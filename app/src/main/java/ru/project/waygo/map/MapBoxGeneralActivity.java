@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -67,6 +68,7 @@ import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 
 import java.util.ArrayList;
@@ -201,8 +203,14 @@ public class MapBoxGeneralActivity extends BaseActivity {
             return false;
         });
 
+        RouteLineColorResources colorResources = new RouteLineColorResources.Builder()
+                .routeDefaultColor(Color.parseColor("#7A67FE"))
+                .build();
+
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this)
-                .withRouteLineResources(new RouteLineResources.Builder().build())
+                .withRouteLineResources(new RouteLineResources.Builder()
+                        .routeLineColorResources(colorResources)
+                        .build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER)
                 .build();
 
@@ -341,10 +349,11 @@ public class MapBoxGeneralActivity extends BaseActivity {
 
                 RouteOptions.Builder builder = RouteOptions.builder()
                         .coordinatesList(points)
+                        .steps(true)
+                        .overview(DirectionsCriteria.OVERVIEW_FULL)
                         .alternatives(false)
                         .profile(DirectionsCriteria.PROFILE_WALKING)
                         .bearingsList(bearings);
-                applyDefaultNavigationOptions(builder);
 
                 mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
                     @Override

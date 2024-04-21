@@ -106,7 +106,7 @@ public class PointDetailsActivity extends BaseActivity {
             intent.putExtra("name", namePointField.getText().toString());
             intent.putExtra("description", descriptionField.getText().toString());
             intent.putExtra("points", getPointsExtra(List.of(pointDTO)));
-            intent.putExtra("fromRoute", true);
+            intent.putExtra("fromRoute", false);
             context.startActivity(intent);
         });
     }
@@ -116,6 +116,8 @@ public class PointDetailsActivity extends BaseActivity {
         pointDTO = PointDTO.builder()
                 .pointName(intent.getStringExtra("name"))
                 .description(intent.getStringExtra("description"))
+                .latitude(intent.getDoubleExtra("latitude", 0.0))
+                .longitude(intent.getDoubleExtra("longitude", 0.0))
                 .id(intent.getLongExtra("id", 0))
                 .build();
 

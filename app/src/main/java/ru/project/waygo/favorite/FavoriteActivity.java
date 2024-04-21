@@ -153,6 +153,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
         UserService service = retrofit.createService(UserService.class);
 
         Call<Set<PointDTO>> call = service.getFavoritePoints(getUserId());
+        showIndicator();
         call.enqueue(new Callback<Set<PointDTO>>() {
             @Override
             public void onResponse(Call<Set<PointDTO>> call, Response<Set<PointDTO>> response) {
@@ -168,10 +169,11 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
                                     new LocationFragment(point,
                                             ""))
                             .collect(Collectors.toList());
-
+                    hideIndicator();
                     fillRecyclePoint(currentPoint);
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    hideIndicator();
                 }
             }
 
@@ -223,11 +225,13 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     public void onTabSelected(TabLayout.Tab tab) {
         switch (tab.getPosition()) {
             case 0: {
+                fillRecyclePoint(new ArrayList<>());
                 if(currentRoutes.isEmpty()) getRouteFavorites();
                 else fillRecyclePoint(currentRoutes);
                 break;
             }
             case 1: {
+                fillRecyclePoint(new ArrayList<>());
                 if (currentPoint.isEmpty()) getPointsFavorite();
                 else fillRecyclePoint(currentPoint);
                 break;

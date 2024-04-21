@@ -53,7 +53,8 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".map.MapBoxActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:noHistory="true"/>
         <activity
             android:name=".main.HomeActivity"
             android:exported="true" />
