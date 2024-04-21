@@ -12,7 +12,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class RetrofitConfiguration {
 
-    public static String SERVER_URL = "http://192.168.31.6:8080/";
+    public static String SERVER_URL = "http://158.160.13.203:8080/";
     public <T> T createService(Class<T> service){
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
         interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
@@ -22,7 +22,6 @@ public class RetrofitConfiguration {
                 .addInterceptor(interceptor)
                 .build();
         Retrofit retrofit = new Retrofit.Builder()
-//                .baseUrl("http://192.168.31.70:8080/")
                 .baseUrl(SERVER_URL)
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory

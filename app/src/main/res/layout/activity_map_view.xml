@@ -94,6 +94,7 @@
                 android:layout_height="50dp"
                 android:layout_marginBottom="11dp"
                 android:background="@drawable/ar_button"
+                android:backgroundTint="@null"
                 app:layout_constraintBottom_toTopOf="@+id/descriprion_point"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.951"
@@ -141,6 +142,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_backward"
+                    android:backgroundTint="@null"
                     android:layout_width="35dp"
                     android:layout_height="35dp"
                     android:layout_marginTop="28dp"
@@ -157,6 +159,7 @@
                     android:layout_height="35dp"
                     android:layout_marginTop="28dp"
                     android:background="@drawable/button_forward_player"
+                    android:backgroundTint="@null"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.165"
