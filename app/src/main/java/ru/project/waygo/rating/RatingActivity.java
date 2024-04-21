@@ -49,6 +49,7 @@ public class RatingActivity extends AppCompatActivity {
         retrofit = new RetrofitConfiguration();
 
         ratingBar = findViewById(R.id.ratingBar);
+        nameExcursion = findViewById(R.id.name_excursion);
         ratingBar.setMax(5);
         ratingBar.setStepSize(1);
         closeButton = findViewById(R.id.close_button);

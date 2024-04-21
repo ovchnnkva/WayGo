@@ -1,6 +1,7 @@
 package ru.project.waygo.ar;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -14,6 +15,7 @@ import android.os.StrictMode;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.PixelCopy;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -75,12 +77,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.project.waygo.BaseActivity;
+import ru.project.waygo.DownloaadConfirmDialogActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.dto.ar.ArMetaInfoDTO;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.PointService;
 
-public class ArActivity extends AppCompatActivity {
+public class ArActivity extends BaseActivity {
 
     private RetrofitConfiguration retrofit;
 
@@ -94,6 +98,7 @@ public class ArActivity extends AppCompatActivity {
     List<AnchorNode> nodeList = new ArrayList<>();
 
     Session session;
+    private DownloaadConfirmDialogActivity dialog;
 
     private boolean isPlaced;
     private boolean isFixed;
@@ -118,6 +123,7 @@ public class ArActivity extends AppCompatActivity {
 
         retrofit = new RetrofitConfiguration();
         setContentView(R.layout.activity_ar);
+        dialog = new DownloaadConfirmDialogActivity(getApplicationContext());
 
         Intent intent = getIntent();
         long id = 1l;
@@ -136,17 +142,15 @@ public class ArActivity extends AppCompatActivity {
                     StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
                     StrictMode.setThreadPolicy(policy);
                     AtomicLong size = new AtomicLong();
-                    DownloadConfirmDialog dialog = new DownloadConfirmDialog(ArActivity.this);
                     reference.getMetadata().addOnSuccessListener(storageMetadata -> {
                         size.set(storageMetadata.getSizeBytes() / (1024 * 1024));
 
                         dialog.setText("\n" + reference.getName() + " (" + size + "MB).");
-                        dialog.preBuild(creteOnOkListener(reference, localFile), createOnNoListener(), getApplicationContext());
+                        dialog.preBuild(creteOnOkListener(reference, localFile));
 
-                        dialog.show(getSupportFragmentManager(), " ");
+                        dialog.show();
                         Log.i("ARR", "onResponse: OK= " + storageMetadata.getSizeBytes());
                     }).addOnFailureListener(e -> Log.i("ARR", "onFailure: ." + e.getLocalizedMessage()));
-
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -279,16 +283,15 @@ public class ArActivity extends AppCompatActivity {
         session.configure(config);
     }
 
-    public DialogInterface.OnClickListener creteOnOkListener(StorageReference reference, File localFile) {
-        return (dialog, which) -> reference.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+    public View.OnClickListener creteOnOkListener(StorageReference reference, File localFile) {
+        return (view) -> reference.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
             Toast.makeText(ArActivity.this, "OK!", Toast.LENGTH_SHORT).show();
             buildModel(localFile);
-        }).addOnFailureListener(e -> Toast.makeText(ArActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show());
-    }
-
-    public DialogInterface.OnClickListener createOnNoListener() {
-        return (dialog, which) -> {
-        };
+            dialog.close();
+        }).addOnFailureListener(e -> {
+            Toast.makeText(ArActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            dialog.close();
+        });
     }
 
     private void configCamera() {

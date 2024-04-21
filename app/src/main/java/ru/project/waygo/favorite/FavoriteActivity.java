@@ -215,6 +215,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
             emptyLayout.setVisibility(View.VISIBLE);
         } else {
             emptyLayout.setVisibility(View.INVISIBLE);
+            recyclerView.setVisibility(View.VISIBLE);
             LocationAdapter adapter = new LocationAdapter(FavoriteActivity.this, fragments, getUserId());
             recyclerView.setAdapter(adapter);
         }
@@ -225,13 +226,13 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     public void onTabSelected(TabLayout.Tab tab) {
         switch (tab.getPosition()) {
             case 0: {
-                fillRecyclePoint(new ArrayList<>());
+                recyclerView.setVisibility(View.INVISIBLE);
                 if(currentRoutes.isEmpty()) getRouteFavorites();
                 else fillRecyclePoint(currentRoutes);
                 break;
             }
             case 1: {
-                fillRecyclePoint(new ArrayList<>());
+                recyclerView.setVisibility(View.INVISIBLE);
                 if (currentPoint.isEmpty()) getPointsFavorite();
                 else fillRecyclePoint(currentPoint);
                 break;
@@ -252,10 +253,12 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
 
 
     protected void showIndicator() {
+        tabLayout.setEnabled(false);
         loader.setVisibility(View.VISIBLE);
     }
 
     protected void hideIndicator() {
+        tabLayout.setEnabled(true);
         loader.setVisibility(View.INVISIBLE);
     }
 }

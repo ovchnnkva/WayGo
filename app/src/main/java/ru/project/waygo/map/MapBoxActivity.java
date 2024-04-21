@@ -130,6 +130,7 @@ public class MapBoxActivity extends BaseActivity {
     private ToggleButton speedAudioButton;
     private MaterialButton nextPointButton;
     private List<PointDTO> pointsDto;
+    private PointDTO currentPoint;
     private long routeId;
     private boolean isFromRoute;
     private ConstraintLayout layoutPlayer;
@@ -342,7 +343,7 @@ public class MapBoxActivity extends BaseActivity {
 
             arButton.setOnClickListener(view -> {
                 Intent intent = new Intent(this, ArActivity.class);
-                intent.putExtra("pointId",pointsDto.get(0).getId());
+                intent.putExtra("pointId", currentPoint.getId());
                 startActivity(intent);
             });
 
@@ -489,6 +490,8 @@ public class MapBoxActivity extends BaseActivity {
                 nextPoint = dto;
             }
         }
+
+        currentPoint = nextPoint;
         pointsDto.remove(nextPoint);
         if(pointsDto.isEmpty()) {
             nextPointButton.setText(getResources().getString(R.string.end_excursion));

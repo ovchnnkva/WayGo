@@ -141,7 +141,10 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             return false;
         });
 
-        if(currentRoutes.isEmpty()) getExcursions();
+        if(currentRoutes.isEmpty()) {
+            showIndicator();
+            getExcursions();
+        }
         setListeners();
     }
 
@@ -246,7 +249,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                           ? citySearch.getText().toString()
                           : "";
         Call<List<PointDTO>> call = pointService.getByCity(cityName);
-        showIndicator();
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
@@ -263,6 +265,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    hideIndicator();
                     emptyLayout.setVisibility(View.VISIBLE);
                 }
             }
@@ -303,7 +306,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 ? citySearch.getText().toString()
                 : "";
         Call<List<RouteDTO>> call = service.getByCityName(cityName);
-        showIndicator();
         call.enqueue(new Callback<List<RouteDTO>>() {
             @Override
             public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
@@ -323,6 +325,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    hideIndicator();
                     emptyLayout.setVisibility(View.VISIBLE);
                 }
             }
@@ -358,7 +361,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private void getCities(String name) {
         CityService service = retrofit.createService(CityService.class);
         Call<List<String>> call = service.getByName(name);
-        showIndicator();
         call.enqueue(new Callback<List<String>>() {
             @Override
             public void onResponse(Call<List<String>> call, Response<List<String>> response) {
@@ -368,8 +370,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
-
-                hideIndicator();
             }
 
             @Override
@@ -396,12 +396,14 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         switch (tab.getPosition()) {
             case 0: {
                 isExcursion = true;
+                showIndicator();
                 if(currentRoutes.isEmpty()) getExcursions();
                 else getFavoritesRoutesIds(currentRoutes);
                 break;
             }
             case 1: {
                 isExcursion = false;
+                showIndicator();
                 currentPoints = getPointsFromExcursion();
                 if (currentPoints.isEmpty()) getPoints();
                 else getFavoritesPointsIds(currentPoints);
@@ -435,10 +437,12 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     protected void showIndicator() {
+        tabLayout.setEnabled(false);
         loader.setVisibility(View.VISIBLE);
     }
 
     protected void hideIndicator() {
+        tabLayout.setEnabled(true);
         loader.setVisibility(View.INVISIBLE);
     }
 }

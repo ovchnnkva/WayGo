@@ -110,7 +110,7 @@
                 android:orientation="horizontal"
                 android:paddingTop="20dp"
                 android:paddingBottom="20dp"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/name_point">
 
@@ -142,12 +142,12 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/button_backward"
-                    android:backgroundTint="@null"
                     android:layout_width="35dp"
                     android:layout_height="35dp"
                     android:layout_marginTop="28dp"
                     android:layout_marginEnd="24dp"
                     android:background="@drawable/button_back_player"
+                    android:backgroundTint="@null"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toStartOf="@+id/toggle_play"
                     app:layout_constraintTop_toBottomOf="@+id/seek_bar"

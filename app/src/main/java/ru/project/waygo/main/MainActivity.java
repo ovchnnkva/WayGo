@@ -2,15 +2,11 @@ package ru.project.waygo.main;
 
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
-import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
-import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
 
