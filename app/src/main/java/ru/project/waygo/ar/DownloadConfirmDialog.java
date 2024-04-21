@@ -29,6 +29,7 @@ public class DownloadConfirmDialog extends DialogFragment {
 
         // Create the AlertDialog object and return it.
         return builder.create();
+
     }
 
     public void preBuild(DialogInterface.OnClickListener onOk, DialogInterface.OnClickListener onNo,Context context){
@@ -38,6 +39,10 @@ public class DownloadConfirmDialog extends DialogFragment {
 
     public void setText(String modelInfo){
         builder.setMessage(context.getResources().getString(R.string.arConfirm)+modelInfo+context.getResources().getString(R.string.arContinue));
+    }
+
+    public void close() {
+        this.close();
     }
 
 }

@@ -1,7 +1,8 @@
 package ru.project.waygo.ar;
 
 import android.Manifest;
-import android.app.Dialog;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,13 +10,16 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.FileUtils;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.PixelCopy;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -60,12 +64,16 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,6 +91,7 @@ import ru.project.waygo.R;
 import ru.project.waygo.dto.ar.ArMetaInfoDTO;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.PointService;
+import ru.project.waygo.utils.CacheUtils;
 
 public class ArActivity extends BaseActivity {
 
@@ -92,6 +101,8 @@ public class ArActivity extends BaseActivity {
     ModelRenderable copy;
     MaterialButton clearButton;
     MaterialButton takePict;
+
+    ProgressBar progressBar;
 
     MaterialButton fixButton;
 
@@ -103,9 +114,12 @@ public class ArActivity extends BaseActivity {
     private boolean isPlaced;
     private boolean isFixed;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_ar);
+
         try {
             createSession();
         } catch (UnavailableDeviceNotCompatibleException e) {
@@ -120,22 +134,46 @@ public class ArActivity extends BaseActivity {
             throw new RuntimeException(e);
         }
 
+        dialog = new DownloaadConfirmDialogActivity(ArActivity.this);
+        progressBar = findViewById(R.id.progress);
+
+        progressBar.setVisibility(View.GONE);
 
         retrofit = new RetrofitConfiguration();
-        setContentView(R.layout.activity_ar);
-        dialog = new DownloaadConfirmDialogActivity(getApplicationContext());
+
 
         Intent intent = getIntent();
         long id = 1l;
         PointService pointService = retrofit.createService(PointService.class);
 
-        Call<ArMetaInfoDTO> ar = pointService.getArMetaInfo(id);
+        Call<ArMetaInfoDTO> ar = pointService.getArMetaInfo(intent.getLongExtra("pointId",0));
         ar.enqueue(new Callback<ArMetaInfoDTO>() {
             @Override
             public void onResponse(Call<ArMetaInfoDTO> call, Response<ArMetaInfoDTO> response) {
 
-
+                configCamera();
                 String[] parts = response.body().getKey().split("\\.");
+                String name = response.body().getKey();
+                if(CacheUtils.getObjectFileCache(getApplicationContext(),parts[0]) != null){
+                    File file = null;
+                    try {
+                        file = File.createTempFile(parts[0],parts[1]);
+                        FileOutputStream fos = new FileOutputStream(file.getPath());
+                        fos.write(CacheUtils.getObjectFileCache(getApplicationContext(),parts[0]));
+                        fos.flush();
+                        fos.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    try {
+                        buildModel(file);
+                        Toast.makeText(getApplicationContext(),"Ok!",Toast.LENGTH_SHORT).show();
+                        return;
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
                 try {
                     final File localFile = File.createTempFile(parts[0], parts[1]);
                     StorageReference reference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://waygodb-9ccc6.appspot.com/").child("ar/pistol.glb");
@@ -144,17 +182,16 @@ public class ArActivity extends BaseActivity {
                     AtomicLong size = new AtomicLong();
                     reference.getMetadata().addOnSuccessListener(storageMetadata -> {
                         size.set(storageMetadata.getSizeBytes() / (1024 * 1024));
-
-                        dialog.setText("\n" + reference.getName() + " (" + size + "MB).");
-                        dialog.preBuild(creteOnOkListener(reference, localFile));
-
+                        Log.i("ARR", "onResponse: "+storageMetadata.getName());
+                        dialog.setText("\n" + storageMetadata.getName() + " (" + size + "MB).");
+                        dialog.preBuild(creteOnOkListener(reference, localFile,parts[0]));
                         dialog.show();
-                        Log.i("ARR", "onResponse: OK= " + storageMetadata.getSizeBytes());
                     }).addOnFailureListener(e -> Log.i("ARR", "onFailure: ." + e.getLocalizedMessage()));
 
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
+
             }
 
             @Override
@@ -162,24 +199,24 @@ public class ArActivity extends BaseActivity {
 
             }
         });
-        configCamera();
+
 
     }
 
 
-    private void buildModel(File file) {
+    private void buildModel(File file) throws IOException {
         ArFragment arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         arFragment.setMenuVisibility(true);
 
         ModelRenderable.builder().setSource(this,
                 RenderableSource.builder().setSource(this, Uri.parse(file.getPath()),
-                RenderableSource.SourceType.GLB).setScale(10).build()).build().thenAccept(renderable -> {
-            lampPostRenderable= renderable;
+                        RenderableSource.SourceType.GLB).setScale(10).build()).build().thenAccept(renderable -> {
+            lampPostRenderable = renderable;
             copy = lampPostRenderable.makeCopy();
             copy.getMaterial().setFloat3("baseColorTint",
-                    new Color(android.graphics.Color.rgb(128,128,128)));;
+                    new Color(android.graphics.Color.rgb(128, 128, 128)));
+            ;
         });
-        ArSceneView arSceneView = arFragment.getArSceneView();
         arFragment.setOnTapArPlaneListener((HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
 
             if (lampPostRenderable == null) {
@@ -200,26 +237,22 @@ public class ArActivity extends BaseActivity {
             lamp.setOnTouchListener(new Node.OnTouchListener() {
                 @Override
                 public boolean onTouch(HitTestResult hitTestResult, MotionEvent motionEvent) {
-                    Log.i("ARR", "onTouch: ");
                     return true;
                 }
             });
 
 
             arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
-                if(isFixed){
+                if (isFixed) {
                     return;
                 }
-                Log.i("ARR", "onUpdate: " + camera.getDisplayOrientedPose());
-                float tx = camera.getPose().tx() ;
+                float tx = camera.getPose().tx();
                 float ty = 0;
-                float tz = camera.getPose().tz() ;
+                float tz = camera.getPose().tz();
 
-                float qx = camera.getPose().qx();
-                float qz = camera.getPose().qz();
-                lamp.setLocalPosition(new Vector3(tx,0,tz));
+                lamp.setLocalPosition(new Vector3(tx, 0, tz));
                 lamp.setLocalPosition(lamp.getLocalPosition().scaled(5));
-                Quaternion quaternion = new Quaternion(new Vector3(tx,0f, tz).scaled(5));
+                Quaternion quaternion = new Quaternion(new Vector3(tx, 0f, tz).scaled(5));
                 lamp.setLocalRotation(quaternion);
 
             });
@@ -234,44 +267,16 @@ public class ArActivity extends BaseActivity {
             }
         });
         fixButton = findViewById(R.id.button_fix);
-        fixButton.setOnClickListener(s->{
-            if(isFixed == true){
+        fixButton.setOnClickListener(s -> {
+            if (isFixed == true) {
                 isFixed = false;
                 return;
             }
-            isFixed = false;
+            isFixed = true;
         });
     }
 
-    private void extracted(ArFragment arFragment) {
-        arFragment.getArSceneView().getScene().addOnUpdateListener(s->{
-            if(isPlaced){
-                return;
-            }
-            Frame frame = arFragment.getArSceneView().getArFrame();
-            float x = frame.getCamera().getPose().qx() ;
-            float y = frame.getCamera().getPose().qy();
-            float z = frame.getCamera().getPose().qz() ;
-            Collection<Plane> planes = frame.getUpdatedTrackables(Plane.class);
-            for(Plane plane : planes){
-                if(plane.getTrackingState() == TrackingState.TRACKING){
-                    Anchor anchor = plane.createAnchor(frame.getCamera().getPose());
-                    AnchorNode node = new AnchorNode(anchor);
-                    TransformableNode lamp = new TransformableNode(arFragment.getTransformationSystem());
-                    lamp.getScaleController().setMaxScale(15f);
 
-                    lamp.setParent(node);
-                    lamp.setRenderable(copy);
-                    lamp.select();
-                    arFragment.getArSceneView().getScene().addChild(node);
-                    isPlaced = true;
-                }
-            }
-        });
-
-
-
-    }
 
     public void createSession() throws UnavailableDeviceNotCompatibleException, UnavailableSdkTooOldException, UnavailableArcoreNotInstalledException, UnavailableApkTooOldException, CameraNotAvailableException {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
@@ -283,15 +288,38 @@ public class ArActivity extends BaseActivity {
         session.configure(config);
     }
 
-    public View.OnClickListener creteOnOkListener(StorageReference reference, File localFile) {
-        return (view) -> reference.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
-            Toast.makeText(ArActivity.this, "OK!", Toast.LENGTH_SHORT).show();
-            buildModel(localFile);
-            dialog.close();
-        }).addOnFailureListener(e -> {
-            Toast.makeText(ArActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            dialog.close();
-        });
+    public View.OnClickListener creteOnOkListener(StorageReference reference, File localFile, String name) {
+        return new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reference.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+
+                            Toast.makeText(ArActivity.this, "OK!", Toast.LENGTH_SHORT).show();
+                            try {
+                                CacheUtils.cacheObjectFiles(getApplicationContext(),name, Files.readAllBytes(Paths.get(localFile.getPath())));
+                                buildModel(localFile);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .addOnFailureListener(e -> Toast.makeText(ArActivity.this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show())
+                        .addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
+                                progressBar.setVisibility(View.VISIBLE);
+                                long total = snapshot.getTotalByteCount();
+                                long atMoment = snapshot.getBytesTransferred()+1;
+                                progressBar.setProgress((int) (100*(atMoment/total)),true);
+                            }
+                        });
+                dialog.close();
+            }
+        };
+    }
+
+    public DialogInterface.OnClickListener createOnNoListener() {
+        return (dialog, which) -> {
+        };
     }
 
     private void configCamera() {
@@ -345,18 +373,7 @@ public class ArActivity extends BaseActivity {
                     toast.show();
                     return;
                 }
-                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Photo saved", Snackbar.LENGTH_LONG);
-                snackbar.setAction("Open in Photos", v -> {
-                    File photoFile = new File(filename);
 
-                    Uri photoURI = FileProvider.getUriForFile(ArActivity.this, ArActivity.this.getPackageName() + ".ar.codelab.name.provider", photoFile);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, photoURI);
-                    intent.setDataAndType(photoURI, "image/*");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
-
-                });
-                snackbar.show();
             } else {
                 Log.d("DrawAR", "Failed to copyPixels: " + copyResult);
                 Toast toast = Toast.makeText(ArActivity.this, "Failed to copyPixels: " + copyResult, Toast.LENGTH_LONG);
