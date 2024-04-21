@@ -22,6 +22,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Objects;
@@ -43,7 +44,8 @@ public class LoginActivity extends BaseActivity {
     private MaterialButton registrationButton;
     private TextInputEditText passwordField;
     private TextInputEditText emailFields;
-
+    private TextInputLayout passwordLayout;
+    private TextInputLayout emailLayout;
     private RetrofitConfiguration retrofit;
 
     private String email;
@@ -68,7 +70,8 @@ public class LoginActivity extends BaseActivity {
         registrationButton = findViewById(R.id.button_registration);
         passwordField = findViewById(R.id.password_field);
         emailFields = findViewById(R.id.email_field);
-
+        passwordLayout = findViewById(R.id.password_layout);
+        emailLayout = findViewById(R.id.email_layout);
         retrofit = new RetrofitConfiguration();
 
         addListeners();
@@ -108,15 +111,15 @@ public class LoginActivity extends BaseActivity {
                             getUser();
                             logIn();
                         }).addOnFailureListener(e ->
-                            Toast.makeText(LoginActivity.this, "Неправильный пароль", Toast.LENGTH_LONG).show()
+                            Toast.makeText(LoginActivity.this, "Неправильный пароль или email", Toast.LENGTH_LONG).show()
                         );
             } else {
-                passwordField.setError("Введите пароль");
+                passwordLayout.setError("Введите пароль");
             }
         } else if(email.isEmpty()){
-            emailFields.setError("Email не заполнен");
+            emailLayout.setError("Email не заполнен");
         } else{
-            emailFields.setError("Введен некорректный email");
+            emailLayout.setError("Введен некорректный email");
         }
     }
 

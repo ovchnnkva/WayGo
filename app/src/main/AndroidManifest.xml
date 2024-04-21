@@ -28,6 +28,13 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".rating.RatingActivity"
+            android:exported="false"
+            android:noHistory="true"/>
+        <activity
+            android:name=".user_profile.ChangePasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".user_profile.UserProfileActivity"
             android:exported="true" />
         <activity
@@ -45,15 +52,16 @@
         <activity
             android:name=".login.RegistrationActivity"
             android:exported="true"
-            android:noHistory="true"/>
+            android:noHistory="true" />
         <activity
             android:name=".login.LoginActivity"
             android:exported="true"
-            android:windowSoftInputMode="stateHidden"
-            android:noHistory="true"/>
+            android:noHistory="true"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".map.MapBoxActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:noHistory="true"/>
         <activity
             android:name=".main.HomeActivity"
             android:exported="true" />

@@ -18,6 +18,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
@@ -27,6 +28,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -78,6 +80,7 @@ import com.mapbox.navigation.ui.maps.location.NavigationLocationProvider;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineApi;
 import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
+import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 import com.mapbox.turf.TurfMeasurement;
 import com.smarteist.autoimageslider.SliderView;
@@ -85,6 +88,7 @@ import com.smarteist.autoimageslider.SliderView;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -97,11 +101,12 @@ import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.ar.ArActivity;
 import ru.project.waygo.dto.point.PointDTO;
-import ru.project.waygo.fragment.PointFragment;
+import ru.project.waygo.main.HomeActivity;
+import ru.project.waygo.rating.RatingActivity;
 
 public class MapBoxActivity extends BaseActivity {
-    MapView mapView;
-    FloatingActionButton focusLocationBtn;
+    private MapView mapView;
+    private FloatingActionButton focusLocationBtn;
     private final NavigationLocationProvider navigationLocationProvider = new NavigationLocationProvider();
     private MapboxRouteLineView routeLineView;
     private MapboxRouteLineApi routeLineApi;
@@ -115,13 +120,18 @@ public class MapBoxActivity extends BaseActivity {
     private MaterialButton arButton;
     private TextView currentTimeText;
     private TextView allTimeText;
+
+    private TextView nameText;
+    private TextView descriptionText;
     private MediaPlayer player;
     private Handler handler;
     private SeekBar seekBar;
+    private ProgressBar loader;
     private ToggleButton speedAudioButton;
     private MaterialButton nextPointButton;
     private List<PointDTO> pointsDto;
-
+    private long routeId;
+    private boolean isFromRoute;
     private ConstraintLayout layoutPlayer;
 
     private final Runnable updateSongTime = new Runnable() {
@@ -212,6 +222,10 @@ public class MapBoxActivity extends BaseActivity {
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         slider = findViewById(R.id.slider_map);
+        slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+        slider.setScrollTimeInSec(2);
+        slider.setAutoCycle(true);
+        slider.startAutoCycle();
         playButton = findViewById(R.id.toggle_play);
 
         backwardButton = findViewById(R.id.button_backward);
@@ -219,14 +233,23 @@ public class MapBoxActivity extends BaseActivity {
         arButton = findViewById(R.id.ar_button);
         currentTimeText = findViewById(R.id.current_time);
         allTimeText = findViewById(R.id.all_time);
+        nameText = findViewById(R.id.name_point);
+        descriptionText = findViewById(R.id.descriprion_point);
         seekBar = findViewById(R.id.seek_bar);
+        loader = findViewById(R.id.loading);
         speedAudioButton = findViewById(R.id.toggle_speed);
         layoutPlayer = findViewById(R.id.layout_player);
         nextPointButton = findViewById(R.id.button_next_point);
         player = new MediaPlayer();
 
+        RouteLineColorResources colorResources = new RouteLineColorResources.Builder()
+                .routeDefaultColor(Color.parseColor("#7A67FE"))
+                .build();
+
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(this)
-                .withRouteLineResources(new RouteLineResources.Builder().build())
+                .withRouteLineResources(new RouteLineResources.Builder()
+                        .routeLineColorResources(colorResources)
+                        .build())
                 .withRouteLineBelowLayerId(LocationComponentConstants.LOCATION_INDICATOR_LAYER)
                 .build();
 
@@ -281,7 +304,7 @@ public class MapBoxActivity extends BaseActivity {
             AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
             PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
 
-            pointsDto = getPoints();
+            pointsDto = getFromIntent();
             List<Point> points = pointsDto.stream()
                     .map(p -> Point.fromLngLat(Objects.requireNonNull(p).getLongitude(), p.getLatitude()))
                     .collect(Collectors.toList());
@@ -300,6 +323,15 @@ public class MapBoxActivity extends BaseActivity {
             nextPointButton.setOnClickListener(view -> {
                 if(!pointsDto.isEmpty()) {
                     fetchRoute();
+                } else if(isFromRoute){
+                    Intent intent = new Intent(getApplicationContext(), RatingActivity.class);
+                    intent.putExtra("routeId", routeId);
+                    intent.putExtra("name", nameText.getText().toString());
+                    playerStop();
+                    startActivity(intent);
+                } else {
+                    playerStop();
+                    startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                 }
             });
             focusLocationBtn.setOnClickListener(view -> {
@@ -321,6 +353,12 @@ public class MapBoxActivity extends BaseActivity {
         });
     }
 
+    private void playerStop() {
+        if(player.isPlaying()) {
+            player.stop();
+        }
+    }
+
     @SuppressLint("DefaultLocale")
     private void createAudioPlayer(long pointId) {
         player.reset();
@@ -335,10 +373,6 @@ public class MapBoxActivity extends BaseActivity {
         player.setWakeMode(MapBoxActivity.this, PowerManager.PARTIAL_WAKE_LOCK);
         try {
             player.setDataSource(SERVER_URL + "api/point/audio?pointId=" + pointId);
-//            if(player. == 0) {
-//                layoutPlayer.setVisibility(View.GONE);
-//                return;
-//            }
             player.setOnPreparedListener(player -> layoutPlayer.setVisibility(View.VISIBLE));
             player.setOnErrorListener((player, what, extra)  -> {
                 layoutPlayer.setVisibility(View.GONE);
@@ -411,21 +445,32 @@ public class MapBoxActivity extends BaseActivity {
         });
     }
 
-    private List<PointDTO> getPoints() {
+    private List<PointDTO> getFromIntent() {
         Intent intent = getIntent();
         List<PointDTO> points = new ArrayList<>();
+        List<SliderFragment> images = new ArrayList<>();
+
         if(intent != null) {
             String extraPoints = intent.getStringExtra("points");
             points = getPointsFromExtra(extraPoints);
+            nameText.setText(intent.getStringExtra("name"));
+            descriptionText.setText(intent.getStringExtra("description"));
+            isFromRoute = intent.getBooleanExtra("fromRoute", false);
+            if (isFromRoute) {
+                routeId = intent.getLongExtra("routeId", 0);
+                images.addAll(points
+                        .stream()
+                        .map(p -> new SliderFragment(getPointImage(p.getId())))
+                        .collect(Collectors.toList()));
+            } else {
+                PointDTO point = points.get(0);
+                List<Bitmap> bitmaps = getPointAllImages(point.getId());
+                images.addAll(bitmaps
+                        .stream()
+                        .map(SliderFragment::new)
+                        .collect(Collectors.toList()));
+            }
         }
-        List<PointFragment> fragments = points
-                .stream()
-                .map(point -> new PointFragment(point, getPointImage(point.getId())))
-                .collect(Collectors.toList());
-        List<SliderFragment> images = fragments
-                .stream()
-                .map(fragment -> new SliderFragment(fragment.getImage()))
-                .collect(Collectors.toList());
 
         fillSlider(images);
 
@@ -465,6 +510,19 @@ public class MapBoxActivity extends BaseActivity {
         return getBitmapFromDrawable(getApplicationContext(), R.drawable.location_test);
     }
 
+    private List<Bitmap> getPointAllImages(long pointId) {
+        byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
+
+        if(bytes != null) {
+            String[] base64Photos = new String(bytes, StandardCharsets.UTF_8).split(";");
+            return Arrays.stream(base64Photos)
+                    .map(s -> getBitmapFromBytes(stringToByte(s)))
+                    .collect(Collectors.toList());
+        }
+
+        return List.of(getBitmapFromDrawable(getApplicationContext(), R.drawable.location_test));
+    }
+
     private void fillSlider(List<SliderFragment> fragments) {
         Log.i("MAP_SLIDER", "fillSlider: count fragments " + fragments.size());
         SliderAdapter adapter = new SliderAdapter(MapBoxActivity.this, fragments);
@@ -473,6 +531,7 @@ public class MapBoxActivity extends BaseActivity {
     }
     @SuppressLint("MissingPermission")
     private void fetchRoute() {
+        showIndicator();
         LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxActivity.this);
         locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
             @Override
@@ -494,6 +553,8 @@ public class MapBoxActivity extends BaseActivity {
                 RouteOptions.Builder builder = RouteOptions.builder()
                         .coordinatesList(currentPoints)
                         .alternatives(false)
+                        .steps(true)
+                        .overview(DirectionsCriteria.OVERVIEW_FULL)
                         .profile(DirectionsCriteria.PROFILE_WALKING)
                         .bearingsList(bearings);
                 applyDefaultNavigationOptions(builder);
@@ -512,7 +573,7 @@ public class MapBoxActivity extends BaseActivity {
 
                     @Override
                     public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
-
+                        hideIndicator();
                     }
                 });
 
@@ -521,9 +582,17 @@ public class MapBoxActivity extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Exception exception) {
-
+                hideIndicator();
             }
         });
+    }
+
+    protected void showIndicator() {
+        loader.setVisibility(View.VISIBLE);
+    }
+
+    protected void hideIndicator() {
+        loader.setVisibility(View.INVISIBLE);
     }
 
     @Override

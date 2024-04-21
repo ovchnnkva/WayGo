@@ -4,8 +4,10 @@ import static ru.project.waygo.utils.Base64Util.stringToByte;
 import static ru.project.waygo.utils.BitMapUtils.getBitmapFromBytes;
 import static ru.project.waygo.utils.CacheUtils.getFileCache;
 import static ru.project.waygo.utils.CacheUtils.getFileName;
+import static ru.project.waygo.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.waygo.utils.IntentExtraUtils.getRoutesFromExtra;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.smarteist.autoimageslider.SliderView;
 
 import java.nio.charset.StandardCharsets;
@@ -33,11 +36,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
+import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.RoutePhotosFragment;
+import ru.project.waygo.map.MapBoxActivity;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.RouteService;
 
@@ -49,9 +54,10 @@ public class PointDetailsActivity extends BaseActivity {
     private TextView descriptionField;
     private SliderView slider;
     private ToggleButton favorite;
-    private long pointId;
     private RetrofitConfiguration retrofit;
     private List<RouteDTO> routesWithPoint = new ArrayList<>();
+    private MaterialButton goToExcurssion;
+    private PointDTO pointDTO;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +71,7 @@ public class PointDetailsActivity extends BaseActivity {
 
         namePointField = findViewById(R.id.name_point);
         descriptionField = findViewById(R.id.descriprion_point);
+        goToExcurssion = findViewById(R.id.go_to_excursion);
         slider = findViewById(R.id.slider_points);
         slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
         slider.setScrollTimeInSec(2);
@@ -84,17 +91,38 @@ public class PointDetailsActivity extends BaseActivity {
         fillFromIntent();
 
         if(routesWithPoint.isEmpty()) {
-            getRoutesByPointId(pointId);
+            getRoutesByPointId(pointDTO.getId());
         } else {
             fillRecycleFromCache();
         }
+
+        setListeners();
+    }
+
+    private void setListeners() {
+        Context context = PointDetailsActivity.this;
+        Intent intent = new Intent(context, MapBoxActivity.class);
+        goToExcurssion.setOnClickListener(e -> {
+            intent.putExtra("name", namePointField.getText().toString());
+            intent.putExtra("description", descriptionField.getText().toString());
+            intent.putExtra("points", getPointsExtra(List.of(pointDTO)));
+            intent.putExtra("fromRoute", false);
+            context.startActivity(intent);
+        });
     }
 
     private void fillFromIntent() {
         Intent intent = getIntent();
-        namePointField.setText(intent.getStringExtra("name"));
-        descriptionField.setText(intent.getStringExtra("description"));
-        pointId = intent.getLongExtra("id", 0);
+        pointDTO = PointDTO.builder()
+                .pointName(intent.getStringExtra("name"))
+                .description(intent.getStringExtra("description"))
+                .latitude(intent.getDoubleExtra("latitude", 0.0))
+                .longitude(intent.getDoubleExtra("longitude", 0.0))
+                .id(intent.getLongExtra("id", 0))
+                .build();
+
+        namePointField.setText(pointDTO.getPointName());
+        descriptionField.setText(pointDTO.getDescription());
         favorite.setChecked(intent.getBooleanExtra("favorite", false));
         routesWithPoint = getRoutesFromExtra(
                 Objects.requireNonNullElse(intent.getStringExtra("routes"), "")
@@ -137,7 +165,7 @@ public class PointDetailsActivity extends BaseActivity {
     }
 
     private void setPointImage() {
-        byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointId));
+        byte[] bytes = getFileCache(getApplicationContext(), getFileName("point", pointDTO.getId()));
 
         if(bytes != null) { //TODO: добавить получение изображения напрямую после того как будут добавлены изображения к маршрутам
             String[] base64Photos = new String(bytes, StandardCharsets.UTF_8).split(";");

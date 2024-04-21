@@ -9,6 +9,8 @@ import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -20,10 +22,12 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -75,7 +79,10 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     private List<LocationFragment> currentPoints = new ArrayList<>();
     private boolean isExcursion = true;
-    private long userId;
+    private ConstraintLayout emptyLayout;
+
+    private ProgressDialog dialog;
+    private ProgressBar loader;
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,12 +94,15 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        dialog = new ProgressDialog(getApplicationContext());
         recyclerView = findViewById(R.id.location_container);
         tabLayout = findViewById(R.id.tab_layout);
+        emptyLayout = findViewById(R.id.empty_layout);
         tabLayout.setOnTabSelectedListener(this);
         locationSearch = findViewById(R.id.edit_search_location);
         cityListView = findViewById(R.id.city_container);
         citySearch = findViewById(R.id.search_country);
+        loader = findViewById(R.id.loading);
 
         retrofit = new RetrofitConfiguration();
 
@@ -213,8 +223,10 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     private void fillRecyclePoint(List<LocationFragment> fragments) {
+        emptyLayout.setVisibility(View.INVISIBLE);
         LocationAdapter adapter = new LocationAdapter(HomeActivity.this, fragments, getUserId());
         recyclerView.setAdapter(adapter);
+        cityListView.setVisibility(View.VISIBLE);
     }
 
     private List<LocationFragment> getPointsFromExcursion() {
@@ -234,6 +246,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                           ? citySearch.getText().toString()
                           : "";
         Call<List<PointDTO>> call = pointService.getByCity(cityName);
+        showIndicator();
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
@@ -250,12 +263,14 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    emptyLayout.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<List<PointDTO>> call, @NonNull Throwable t) {
                 Log.i("POINT", "onFailure " + t.getLocalizedMessage());
+                hideIndicator();
             }
         });
     }
@@ -271,13 +286,13 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .filter(p -> response.body().contains(p.getId()))
                             .forEach(p -> p.setFavorite(true));
                 }
-
+                hideIndicator();
                 fillRecyclePoint(currentPoints);
             }
 
             @Override
             public void onFailure(Call<List<Long>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
@@ -288,6 +303,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                 ? citySearch.getText().toString()
                 : "";
         Call<List<RouteDTO>> call = service.getByCityName(cityName);
+        showIndicator();
         call.enqueue(new Callback<List<RouteDTO>>() {
             @Override
             public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
@@ -307,12 +323,13 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
+                    emptyLayout.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
             public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
@@ -328,32 +345,36 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                             .filter(p -> response.body().contains(p.getId()))
                             .forEach(p -> p.setFavorite(true));
                 }
+                hideIndicator();
                 fillRecyclePoint(currentRoutes);
             }
 
             @Override
             public void onFailure(Call<List<Long>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
     }
     private void getCities(String name) {
         CityService service = retrofit.createService(CityService.class);
         Call<List<String>> call = service.getByName(name);
-
+        showIndicator();
         call.enqueue(new Callback<List<String>>() {
             @Override
             public void onResponse(Call<List<String>> call, Response<List<String>> response) {
                 if(response.isSuccessful()) {
+
                     fillCityContainer(response.body());
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
                 }
+
+                hideIndicator();
             }
 
             @Override
             public void onFailure(Call<List<String>> call, Throwable t) {
-
+                hideIndicator();
             }
         });
 
@@ -411,5 +432,13 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     @Override
     public void onTabReselected(TabLayout.Tab tab) {
 
+    }
+
+    protected void showIndicator() {
+        loader.setVisibility(View.VISIBLE);
+    }
+
+    protected void hideIndicator() {
+        loader.setVisibility(View.INVISIBLE);
     }
 }

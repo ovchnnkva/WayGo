@@ -3,6 +3,7 @@ package ru.project.waygo.user_profile;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
+import static ru.project.waygo.Constants.NAME_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
@@ -18,15 +19,12 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
@@ -36,16 +34,18 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Objects;
+
+import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.dto.user.UserDTO;
 import ru.project.waygo.favorite.FavoriteActivity;
-import ru.project.waygo.mail.MailSender;
 import ru.project.waygo.mail.MailSenderAsync;
 import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.main.MainActivity;
 import ru.project.waygo.map.MapBoxGeneralActivity;
 
-public class UserProfileActivity extends AppCompatActivity implements TabLayout.OnTabSelectedListener {
+public class UserProfileActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
     private ConstraintLayout accountLayout;
     private ConstraintLayout feedbackLayout;
     private ConstraintLayout subscribeLayout;
@@ -59,6 +59,7 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
     private MaterialButton signOutButton;
     private MaterialButton saveChanges;
     private MaterialButton sendFeedbackButton;
+    private MaterialButton changePasswordButton;
     private UserDTO userDTO;
 
     @Override
@@ -83,6 +84,7 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
         signOutButton = findViewById(R.id.button_sign_out);
         saveChanges = findViewById(R.id.button_save);
         sendFeedbackButton = findViewById(R.id.button_send_feedback);
+        changePasswordButton = findViewById(R.id.button_change_password);
         tabLayout = findViewById(R.id.tab_layout);
         tabLayout.setOnTabSelectedListener(this);
         BottomNavigationView bottomNavigationView=findViewById(R.id.navigation_bar);
@@ -124,25 +126,28 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+            finishAffinity();
         });
+
+        changePasswordButton.setOnClickListener(view -> startActivity(new Intent(getApplicationContext(), ChangePasswordActivity.class)));
         
         TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if(isUserDataNotEmpty() && (isUpdateUserName() || isUpdateUserEmail())) {
-                    saveChanges.setTextColor(getResources().getColor(R.color.white));
-                    saveChanges.getBackground().setColorFilter(Color.parseColor("#7A67FE"), PorterDuff.Mode.MULTIPLY);
-                    saveChanges.setEnabled(true);
-                } else {
-                    saveChanges.setTextColor(getResources().getColor(R.color.black));
-                    saveChanges.getBackground().setColorFilter(Color.parseColor("#DDDDDD"), PorterDuff.Mode.MULTIPLY);
-                    saveChanges.setEnabled(false);
-                }
+
             }
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
+                if(isUserDataNotEmpty() && (isUpdateUserName() || isUpdateUserEmail())) {
+                    saveChanges.setTextColor(getResources().getColor(R.color.white));
+                    saveChanges.getBackground().setColorFilter(Color.parseColor("#7A67FE"), PorterDuff.Mode.SRC);
+                    saveChanges.setEnabled(true);
+                } else {
+                    saveChanges.setTextColor(getResources().getColor(R.color.black));
+                    saveChanges.getBackground().setColorFilter(Color.parseColor("#DDDDDD"), PorterDuff.Mode.SRC);
+                    saveChanges.setEnabled(false);
+                }
             }
 
             @Override
@@ -157,6 +162,7 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
         saveChanges.setOnClickListener(view -> {
             if(isUpdateUserEmail()) {
                 fireBaseUpdateEmail();
+                updatePreferences();
             }
         });
 
@@ -165,23 +171,26 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
     
     private void fireBaseUpdateEmail() {
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        AuthCredential credential = EmailAuthProvider.getCredential(userDTO.getEmail(), getPassFromPreferences());
+        AuthCredential credential = EmailAuthProvider.getCredential(userDTO.getEmail(), getPasswordFromPreferences());
 
         firebaseUser.reauthenticate(credential)
                 .addOnCompleteListener(task -> {
-                    Log.d("FIREBASE_CHANGE_PASS", "onComplete: user reauth");
-                    firebaseUser.updateEmail(emailField.getText().toString()).addOnCompleteListener(task1 -> {
-                        if(task1.isSuccessful()) {
-                            Toast.makeText(UserProfileActivity.this, "Почта успешно изменена", Toast.LENGTH_SHORT).show();
-                        }
+                    firebaseUser.sendEmailVerification().addOnSuccessListener(task1 -> {
+                        Log.d("FIREBASE_CHANGE_PASS", "onComplete: user reauth");
+                        firebaseUser.updateEmail(emailField.getText().toString()).addOnCompleteListener(task2 -> {
+                            if (task2.isSuccessful()) {
+                                Toast.makeText(UserProfileActivity.this, "Почта успешно изменена", Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     });
                 });
+
     }
 
     private void sendFeedback() {
         if(themeFeedbackField.getText() != null || messageFeedbackField.getText() != null){
             MailSenderAsync mailSenderAsync = new MailSenderAsync(themeFeedbackField.getText().toString(),
-                    messageFeedbackField.getText().toString(), userDTO.getEmail());
+                    messageFeedbackField.getText().toString(), userDTO.getEmail(), getResources().getString(R.string.project_mail));
 
             mailSenderAsync.execute();
             themeFeedbackField.setText("");
@@ -195,39 +204,11 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
                 || !emailField.getText().toString().equals("");
     }
     private boolean isUpdateUserName() {
-        return !nameField.getText().equals(userDTO.getName());
+        return !Objects.equals(nameField.getText().toString(), userDTO.getName());
     }
 
     private boolean isUpdateUserEmail() {
         return !emailField.getText().toString().equals(userDTO.getEmail());
-    }
-    private void sendVerificationEmail()
-    {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        user.sendEmailVerification()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            // email sent
-
-                            // after email is sent just logout the user and finish this activity
-                            FirebaseAuth.getInstance().signOut();
-                            finish();
-                        }
-                        else
-                        {
-                            // email not sent, so display message and restart the activity or do whatever you wish to do
-
-                            //restart this activity
-                            overridePendingTransition(0, 0);
-                            finish();
-                            overridePendingTransition(0, 0);
-                            startActivity(getIntent());
-
-                        }
-                    }
-                });
     }
 
     @Override
@@ -273,6 +254,7 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
                 .email(preferences.getString(EMAIL_FROM_AUTH_FILE, ""))
                 .id(Long.parseLong(preferences.getString(ID_USER_AUTH_FILE, "")))
                 .uid(preferences.getString(UID_USER_AUTH_FILE, ""))
+                .name(preferences.getString(NAME_USER_AUTH_FILE, ""))
                 .build();
 
 
@@ -280,8 +262,15 @@ public class UserProfileActivity extends AppCompatActivity implements TabLayout.
         emailField.setText(userDTO.getEmail());
         passwordField.setText(preferences.getString(PASS_FROM_AUTH_FILE,""));
     }
-    
-    private String getPassFromPreferences() {
+
+    private void updatePreferences() {
+        SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(NAME_USER_AUTH_FILE, nameField.getText().toString());
+        editor.putString(EMAIL_FROM_AUTH_FILE, emailField.getText().toString());
+    }
+
+    private String getPasswordFromPreferences() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         return preferences.getString(PASS_FROM_AUTH_FILE,"");
     }

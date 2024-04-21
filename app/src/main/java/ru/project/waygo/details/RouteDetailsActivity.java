@@ -48,6 +48,7 @@ public class RouteDetailsActivity extends BaseActivity {
     private RecyclerView container;
     private MaterialButton goToExcurssion;
     private String pointsExtra;
+    private long routeId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,15 +89,17 @@ public class RouteDetailsActivity extends BaseActivity {
         Context context = RouteDetailsActivity.this;
         Intent intent = new Intent(context, MapBoxActivity.class);
         goToExcurssion.setOnClickListener(e -> {
+            intent.putExtra("routeId", routeId);
             intent.putExtra("name", name.getText().toString());
             intent.putExtra("description", description.getText().toString());
             intent.putExtra("points", pointsExtra);
+            intent.putExtra("fromRoute", true);
             context.startActivity(intent);
         });
     }
     private void fillFromIntent() {
         Intent intent = getIntent();
-        long routeId = intent.getLongExtra("id", 0);
+        routeId = intent.getLongExtra("id", 0);
         name.setText(intent.getStringExtra("name"));
         description.setText(intent.getStringExtra("description"));
         length.setText(intent.getStringExtra("length"));

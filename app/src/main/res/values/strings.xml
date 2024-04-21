@@ -1,6 +1,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">WayGO</string>
-    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">sk.eyJ1Ijoib3ZjaG5ua3ZhIiwiYSI6ImNsdGp5NnR5YjBwcnQyam8xd3NqMnBmdzkifQ.hYhw7oPWf4voNEABVbm2RA</string>
+    <string name="project_mail">waygo2023@gmail.com</string>
+    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">sk.eyJ1Ijoid2F5Z283NzciLCJhIjoiY2x2OThydnhrMHRrYjJranp3MDRmOXM0diJ9.btMEWCjXrW5q3H0FU9ODww</string>
     <string name="login">Войти</string>
     <string name="clear">Очистить</string>
     <string name="registration_question">Ещё не зарегистрированы?</string>
@@ -39,7 +40,14 @@
     <string name="theme">Тема</string>
     <string name="feedback_massege">Ваше сообщение</string>
     <string name="subscribe_in_development">В разработке</string>
+    <string name="next">Далее</string>
+    <string name="verification_code">Код подтверждения</string>
+    <string name="change">Изменить</string>
+    <string name="get_code">Запросить код</string>
+    <string name="new_password">Придумайте новый пароль</string>
+    <string name="change_password_success">Пароль успешно изменен</string>
     <string name="end_excursion">Завершить</string>
+    <string name="close">Закрыть</string>
     <string name="send">Отправить</string>
     <string name="go_to_next_point">К следующей точке</string>
     <string name="test_location_description_long">Семь «сталинских сестер» — знаменитые высотные здания, которые стали символом Москвы.
