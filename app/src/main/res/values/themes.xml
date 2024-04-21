@@ -13,4 +13,5 @@
     <style name="ButtonStyle" parent="Widget.MaterialComponents.Button">
         <item name="android:colorPrimary">@color/white</item>
     </style>
+
 </resources>

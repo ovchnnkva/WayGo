@@ -6,6 +6,7 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import ru.project.waygo.dto.ar.ArMetaInfoDTO;
 import ru.project.waygo.dto.point.PointDTO;
 
 public interface PointService {
@@ -20,6 +21,9 @@ public interface PointService {
 
     @GET("api/point")
     Call<PointDTO> getByCityAndName(@Query("city") String city, @Query("pointName") String pointName);
+
+    @GET("api/point/ar")
+    Call<ArMetaInfoDTO> getArMetaInfo(@Query("pointId") Long id);
 
     @GET("api/point/audio")
     Call<String> getAudio(@Query("pointId") long pointId);
