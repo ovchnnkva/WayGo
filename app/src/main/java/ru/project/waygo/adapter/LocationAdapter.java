@@ -67,7 +67,9 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
                         && !fragment.getImages().isEmpty()
                         ? fragment.getImages().get(0)
                         : getBitmapFromDrawable(context, R.drawable.location_test));
+
         holder.favorite.setChecked(fragment.isFavorite());
+        holder.favorite.setSelected(fragment.isFavorite());
 
         holder.favorite.setOnClickListener(view -> {
             if(holder.favorite.isChecked()) {
