@@ -233,6 +233,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(CITY_USER_AUTH_FILE, cityCurrent);
+        editor.apply();
     }
     private List<LocationFragment> filterLocation(List<LocationFragment> locationFragments) {
         return locationFragments

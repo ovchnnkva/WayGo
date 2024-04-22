@@ -29,7 +29,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.88"
+        app:layout_constraintHeight_percent="0.89"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -52,6 +52,7 @@
         android:layout_height="wrap_content"
         android:foregroundTint="@color/background_app"
         app:backgroundTint="@color/white"
+        android:background="@color/white"
         app:itemActiveIndicatorStyle="@android:color/transparent"
         app:itemBackground="@color/background_app"
         app:itemIconTint="@drawable/navigation_item_selector"
