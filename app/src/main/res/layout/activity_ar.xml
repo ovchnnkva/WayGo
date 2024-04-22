@@ -27,14 +27,6 @@
         tools:layout_editor_absoluteX="51dp"
         tools:layout_editor_absoluteY="346dp" />
 
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="309dp"
-        android:layout_height="38dp"
-        android:indeterminate="false"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="51dp"
-        tools:layout_editor_absoluteY="346dp"></ProgressBar>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_data"

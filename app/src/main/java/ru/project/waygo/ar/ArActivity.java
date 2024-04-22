@@ -87,6 +87,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.DownloaadConfirmDialogActivity;
+import ru.project.waygo.ProgressDialog;
 import ru.project.waygo.R;
 import ru.project.waygo.dto.ar.ArMetaInfoDTO;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
@@ -102,7 +103,6 @@ public class ArActivity extends BaseActivity {
     MaterialButton clearButton;
     MaterialButton takePict;
 
-    ProgressBar progressBar;
 
     MaterialButton fixButton;
 
@@ -110,6 +110,7 @@ public class ArActivity extends BaseActivity {
 
     Session session;
     private DownloaadConfirmDialogActivity dialog;
+    private ProgressDialog progressDialog;
 
     private boolean isPlaced;
     private boolean isFixed;
@@ -135,9 +136,7 @@ public class ArActivity extends BaseActivity {
         }
 
         dialog = new DownloaadConfirmDialogActivity(ArActivity.this);
-        progressBar = findViewById(R.id.progress);
-
-        progressBar.setVisibility(View.GONE);
+        progressDialog = new ProgressDialog(ArActivity.this);
 
         retrofit = new RetrofitConfiguration();
 
@@ -184,7 +183,7 @@ public class ArActivity extends BaseActivity {
                         size.set(storageMetadata.getSizeBytes() / (1024 * 1024));
                         Log.i("ARR", "onResponse: "+storageMetadata.getName());
                         dialog.setText("\n" + storageMetadata.getName() + " (" + size + "MB).");
-                        dialog.preBuild(creteOnOkListener(reference, localFile,parts[0]));
+                        dialog.preBuild(creteOnOkListener(reference, localFile,parts[0],storageMetadata.getSizeBytes()));
                         dialog.show();
                     }).addOnFailureListener(e -> Log.i("ARR", "onFailure: ." + e.getLocalizedMessage()));
 
@@ -288,12 +287,23 @@ public class ArActivity extends BaseActivity {
         session.configure(config);
     }
 
-    public View.OnClickListener creteOnOkListener(StorageReference reference, File localFile, String name) {
+    public View.OnClickListener creteOnOkListener(StorageReference reference, File localFile, String name,long total) {
         return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reference.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
-
+                FileDownloadTask task = reference.getFile(localFile);
+                FileDownloadTask.TaskSnapshot snapshot = task.getSnapshot();
+                progressDialog.preBuild(snapshot, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Log.i("ARR", "onClick: ");
+                        snapshot.getTask().cancel();
+                        progressDialog.close();
+                    }
+                });
+                progressDialog.show();
+                task.addOnSuccessListener(taskSnapshot -> {
+                            progressDialog.close();
                             Toast.makeText(ArActivity.this, "OK!", Toast.LENGTH_SHORT).show();
                             try {
                                 CacheUtils.cacheObjectFiles(getApplicationContext(),name, Files.readAllBytes(Paths.get(localFile.getPath())));
@@ -306,19 +316,13 @@ public class ArActivity extends BaseActivity {
                         .addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                             @Override
                             public void onProgress(@NonNull FileDownloadTask.TaskSnapshot snapshot) {
-                                progressBar.setVisibility(View.VISIBLE);
-                                long total = snapshot.getTotalByteCount();
-                                long atMoment = snapshot.getBytesTransferred()+1;
-                                progressBar.setProgress((int) (100*(atMoment/total)),true);
+                                long atMoment = snapshot.getBytesTransferred();
+                                progressDialog.setProgress((int) ((100* ((float) (atMoment)/(float) (total)))));
+
                             }
                         });
                 dialog.close();
             }
-        };
-    }
-
-    public DialogInterface.OnClickListener createOnNoListener() {
-        return (dialog, which) -> {
         };
     }
 

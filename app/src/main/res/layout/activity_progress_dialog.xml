@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/substrate_login">
+
+    <TextView
+        android:id="@+id/progress_text"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Сцена скачивается ''xttttt&quot; (444 MB)."
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.226" />
+
+    <ProgressBar
+        android:id="@+id/bar_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="272dp"
+        android:layout_height="7dp"
+        android:gravity="center"
+        android:indeterminate="false"
+        android:textColor="@color/black"
+        android:progress="50"
+        android:progressTint="@color/app_theme"
+        android:progressBackgroundTint="@color/background_gray"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.54"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/progress_text"
+        app:layout_constraintVertical_bias="0.353">
+
+    </ProgressBar>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_cancel"
+        android:layout_width="148dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="141dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="122dp"
+        android:visibility="invisible"
+        android:background="@drawable/button_style_app_theme"
+        android:enabled="false"
+        android:minHeight="48dp"
+        android:text="@string/cancel"
+
+
+        android:textColor="@color/black"
+        android:theme="@style/Theme.MaterialComponents.Light"
+        app:backgroundTint="@color/stroke_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bar_progress"
+        tools:ignore="MissingConstraints" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -5,6 +5,7 @@
     <string name="login">Войти</string>
     <string name="clear">Очистить</string>
     <string name="no">Нет</string>
+    <string name="cancel">Отменить</string>
     <string name="yes">Да</string>
     <string name="moscow">Москва</string>
     <string name="city_name">Название города</string>
