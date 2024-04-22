@@ -285,7 +285,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             public void onResponse(Call<List<Long>> call, Response<List<Long>> response) {
                 if(response.isSuccessful()) {
                     points.stream()
-                            .filter(p -> response.body().contains(p.getId()))
+                            .filter(p -> response.body().contains(p.getLocationId()))
                             .forEach(p -> p.setFavorite(true));
                 }
                 hideIndicator();
@@ -344,7 +344,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             public void onResponse(Call<List<Long>> call, Response<List<Long>> response) {
                 if(response.isSuccessful()) {
                     routes.stream()
-                            .filter(p -> response.body().contains(p.getId()))
+                            .filter(p -> response.body().contains(p.getLocationId()))
                             .forEach(p -> p.setFavorite(true));
                 }
                 hideIndicator();
@@ -412,8 +412,8 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     private void setEnableTab(boolean disable) {
-        for(View view:tabLayout.getTouchables()) {
-            view.setEnabled(disable);
+        for(int i =0; i < 2; i++) {
+            tabLayout.getTabAt(i).view.setEnabled(disable);
         }
     }
 
@@ -441,13 +441,11 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     protected void showIndicator() {
-        tabLayout.setEnabled(false);
         loader.setVisibility(View.VISIBLE);
         setEnableTab(false);
     }
 
     protected void hideIndicator() {
-        tabLayout.setEnabled(true);
         loader.setVisibility(View.INVISIBLE);
         setEnableTab(true);
     }

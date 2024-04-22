@@ -207,6 +207,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     private void cacheImages(String image, long id, String type) {
         cacheFiles(FavoriteActivity.this, getFileName(type, id), image);
     }
+
     private void cacheImages(List<String> image, long id, String type) {
         cacheFiles(FavoriteActivity.this, getFileName(type, id), image);
     }
@@ -216,6 +217,7 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
         } else {
             emptyLayout.setVisibility(View.INVISIBLE);
             recyclerView.setVisibility(View.VISIBLE);
+            fragments.forEach(f -> f.setFavorite(true));
             LocationAdapter adapter = new LocationAdapter(FavoriteActivity.this, fragments, getUserId());
             recyclerView.setAdapter(adapter);
         }
@@ -251,14 +253,19 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
 
     }
 
+    private void setEnableTab(boolean disable) {
+        for(int i =0; i < 2; i++) {
+            tabLayout.getTabAt(i).view.setEnabled(disable);
+        }
+    }
 
     protected void showIndicator() {
-        tabLayout.setEnabled(false);
         loader.setVisibility(View.VISIBLE);
+        setEnableTab(false);
     }
 
     protected void hideIndicator() {
-        tabLayout.setEnabled(true);
         loader.setVisibility(View.INVISIBLE);
+        setEnableTab(true);
     }
 }
