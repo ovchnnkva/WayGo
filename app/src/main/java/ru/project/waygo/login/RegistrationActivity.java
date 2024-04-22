@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Objects;
@@ -39,6 +40,7 @@ import ru.project.waygo.retrofit.services.UserService;
 public class RegistrationActivity extends BaseActivity {
     private TextInputEditText passwordField;
     private TextInputEditText passwortRepeatField;
+    private TextInputLayout passwordLayout;
     private TextInputEditText emailField;
     private TextInputEditText nameField;
     private MaterialButton registrationButton;
@@ -57,6 +59,7 @@ public class RegistrationActivity extends BaseActivity {
         });
 
         passwordField = findViewById(R.id.password_field);
+        passwordLayout = findViewById(R.id.password_layout);
         passwortRepeatField = findViewById(R.id.repeat_password_field);
         emailField = findViewById(R.id.email_field);
         nameField = findViewById(R.id.name_field);
@@ -80,9 +83,7 @@ public class RegistrationActivity extends BaseActivity {
         emailField.setText(intent.getStringExtra("emailField"));
     }
     private boolean validation(){
-
-        return (nameField.getText() != null)
-                && (emailField.getText() != null)
+        return checkEmptyData()
                 && checkValidPass()
                 && checkRepeatPassword();
     }
@@ -95,10 +96,25 @@ public class RegistrationActivity extends BaseActivity {
 
         if((passwordField.getText() != null) && (pass.length() > 8) && (patternDegits.matcher(pass).find())) {
             return true;
-        } else {
-            passwordField.setError("Пароль должен быть длинее 8-ми символов и содержать хотя бы одну цифру");
+        } else if (pass.length() < 9){
+            Toast.makeText(RegistrationActivity.this, "Пароль слишком короткий", Toast.LENGTH_LONG).show();
+        } else if (!patternDegits.matcher(pass).find()) {
+            Toast.makeText(RegistrationActivity.this, "Пароль должен содержать цифры", Toast.LENGTH_LONG).show();
         }
         return false;
+    }
+
+    private boolean checkEmptyData() {
+        if(fieldEmpty(nameField) || fieldEmpty(emailField) || fieldEmpty(passwordField) || fieldEmpty(passwortRepeatField)) {
+            Toast.makeText(RegistrationActivity.this, "Заполните все данные", Toast.LENGTH_LONG).show();
+        } else {
+            return true;
+        }
+        return  false;
+    }
+
+    private boolean fieldEmpty(TextInputEditText field) {
+        return (field.getText() == null) || (field.getText().toString().isBlank());
     }
 
     private boolean checkRepeatPassword() {
@@ -108,6 +124,8 @@ public class RegistrationActivity extends BaseActivity {
         if(!password.isBlank() && !passwordRepeat.isBlank() && password.equals(passwordRepeat)) {
             return true;
         } else {
+            Toast.makeText(RegistrationActivity.this, "Пароли не совпадают",
+                    Toast.LENGTH_LONG).show();
             passwortRepeatField.setError("Пароли не совпадают");
         }
         return false;

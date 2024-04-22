@@ -47,6 +47,7 @@
         android:layout_marginStart="8dp"
         android:maxLines="3"
         android:text="@string/test_location_description"
+        android:textColor="@color/text_gray"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

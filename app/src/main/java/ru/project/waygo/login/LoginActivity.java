@@ -115,12 +115,12 @@ public class LoginActivity extends BaseActivity {
                             Toast.makeText(LoginActivity.this, "Неправильный пароль или email", Toast.LENGTH_LONG).show()
                         );
             } else {
-                passwordLayout.setError("Введите пароль");
+                Toast.makeText(LoginActivity.this, "Введите пароль", Toast.LENGTH_LONG).show();
             }
         } else if(email.isEmpty()){
-            emailLayout.setError("Email не заполнен");
+            Toast.makeText(LoginActivity.this, "Email не заполнен", Toast.LENGTH_LONG).show();
         } else{
-            emailLayout.setError("Введен некорректный email");
+            Toast.makeText(LoginActivity.this, "Введен некорректный email",  Toast.LENGTH_LONG).show();
         }
     }
 

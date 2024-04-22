@@ -114,6 +114,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         retrofit = new RetrofitConfiguration();
 
         cityCurrent = getCityCurrent();
+        cityButton.setText(cityCurrent);
 
         savePreferences();
 

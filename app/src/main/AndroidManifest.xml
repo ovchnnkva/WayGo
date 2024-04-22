@@ -40,10 +40,12 @@
             android:noHistory="true" />
         <activity
             android:name=".user_profile.ChangePasswordActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".user_profile.UserProfileActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".favorite.FavoriteActivity"
             android:exported="true" />
@@ -71,7 +73,8 @@
             android:noHistory="true" />
         <activity
             android:name=".main.HomeActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:windowSoftInputMode="stateHidden" />
 
         <meta-data
             android:name="com.google.ar.core"
