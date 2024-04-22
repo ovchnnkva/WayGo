@@ -33,6 +33,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.project.waygo.dto.CityDto;
 import ru.project.waygo.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
@@ -70,7 +72,12 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private ListView cityListView;
     private EditText locationSearch;
 
-    private EditText citySearch;
+    private MaterialButton cityButton;
+
+    private ConstraintLayout homeLayout;
+    private ConstraintLayout citySearchLayout;
+
+    private EditText searchCity;
 
     private ArrayAdapter<String> cityAdapter;
     private String cityCurrent;
@@ -79,8 +86,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private List<LocationFragment> currentPoints = new ArrayList<>();
     private boolean isExcursion = true;
     private ConstraintLayout emptyLayout;
-
-    private ProgressDialog dialog;
     private ProgressBar loader;
     @SuppressLint("NonConstantResourceId")
     @Override
@@ -93,21 +98,22 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        dialog = new ProgressDialog(getApplicationContext());
+
         recyclerView = findViewById(R.id.location_container);
         tabLayout = findViewById(R.id.tab_layout);
         emptyLayout = findViewById(R.id.empty_layout);
         tabLayout.setOnTabSelectedListener(this);
         locationSearch = findViewById(R.id.edit_search_location);
         cityListView = findViewById(R.id.city_container);
-        citySearch = findViewById(R.id.search_country);
+        cityButton = findViewById(R.id.search_country_button);
+        homeLayout = findViewById(R.id.home_layout);
+        citySearchLayout = findViewById(R.id.search_city_layout);
+        searchCity = findViewById(R.id.search_city);
         loader = findViewById(R.id.loading);
 
         retrofit = new RetrofitConfiguration();
 
-        cityCurrent = citySearch.getText() != null
-                ? citySearch.getText().toString()
-                : "";
+        cityCurrent = getCityCurrent();
 
         savePreferences();
 
@@ -147,6 +153,11 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         setListeners();
     }
 
+    private String getCityCurrent() {
+        SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
+        return preferences.getString(CITY_USER_AUTH_FILE, "");
+    }
+
     private long getUserId() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         return Long.parseLong(preferences.getString(ID_USER_AUTH_FILE, ""));
@@ -178,7 +189,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             }
         });
 
-        citySearch.addTextChangedListener(new TextWatcher() {
+        searchCity.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -186,7 +197,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                getCities(citySearch.getText().toString());
+                getCities(searchCity.getText().toString());
             }
 
             @Override
@@ -195,24 +206,33 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             }
         });
 
-        citySearch.setOnClickListener(e -> getCities(citySearch.getText().toString()));
-        citySearch.setOnFocusChangeListener((view, hasFocus) -> {
-                if(!hasFocus) citySearch.setText(cityCurrent);
+        cityButton.setOnClickListener(e -> {
+            homeLayout.setVisibility(View.INVISIBLE);
+            hideIndicator();
+            citySearchLayout.setVisibility(View.VISIBLE);
         });
-        cityListView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                cityCurrent = (String) adapterView.getItemAtPosition(i);
-                citySearch.setText(cityCurrent);
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+        cityListView.setOnItemClickListener((adapterView, view, i, l) -> {
+            cityCurrent = (String) adapterView.getItemAtPosition(i);
+            cityButton.setText(cityCurrent);
+            saveCityPreferences();
 
-            }
+            citySearchLayout.setVisibility(View.INVISIBLE);
+            fillCityContainer(new ArrayList<>());
+            fillRecyclePoint(new ArrayList<>());
+            homeLayout.setVisibility(View.VISIBLE);
+
+            showIndicator();
+            if(isExcursion) getExcursions();
+            else getPoints();
         });
     }
 
+    private void saveCityPreferences() {
+        SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(CITY_USER_AUTH_FILE, cityCurrent);
+    }
     private List<LocationFragment> filterLocation(List<LocationFragment> locationFragments) {
         return locationFragments
                 .stream()
@@ -244,10 +264,8 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     private void getPoints() {
         PointService pointService = retrofit.createService(PointService.class);
-        String cityName = citySearch.getText() != null
-                          ? citySearch.getText().toString()
-                          : "";
-        Call<List<PointDTO>> call = pointService.getByCity(cityName);
+
+        Call<List<PointDTO>> call = pointService.getByCity(cityCurrent);
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
@@ -301,10 +319,8 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     private void getExcursions() {
         RouteService service = retrofit.createService(RouteService.class);
-        String cityName = citySearch.getText() != null
-                ? citySearch.getText().toString()
-                : "";
-        Call<List<RouteDTO>> call = service.getByCityName(cityName);
+
+        Call<List<RouteDTO>> call = service.getByCityName(cityCurrent);
         call.enqueue(new Callback<List<RouteDTO>>() {
             @Override
             public void onResponse(Call<List<RouteDTO>> call, Response<List<RouteDTO>> response) {
@@ -359,20 +375,19 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
     private void getCities(String name) {
         CityService service = retrofit.createService(CityService.class);
-        Call<List<String>> call = service.getByName(name);
-        call.enqueue(new Callback<List<String>>() {
+        Call<List<CityDto>> call = service.getByName(name);
+        call.enqueue(new Callback<List<CityDto>>() {
             @Override
-            public void onResponse(Call<List<String>> call, Response<List<String>> response) {
+            public void onResponse(Call<List<CityDto>> call, Response<List<CityDto>> response) {
                 if(response.isSuccessful()) {
-
-                    fillCityContainer(response.body());
+                    fillCityContainer(response.body().stream().map(c -> c.getCity()).collect(Collectors.toList()));
                 } else {
-                    Log.i("POINT", "onResponse: " + "404 not found");
+                    Log.i("CITIES", "onResponse: " + "404 not found");
                 }
             }
 
             @Override
-            public void onFailure(Call<List<String>> call, Throwable t) {
+            public void onFailure(Call<List<CityDto>> call, Throwable t) {
                 hideIndicator();
             }
         });
@@ -386,7 +401,9 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         cacheFiles(HomeActivity.this, getFileName(type, id), image);
     }
     private void fillCityContainer(List<String> cities) {
-        cityAdapter = new ArrayAdapter<>(this, R.layout.fragment_city_name, R.id.product_name, cities);
+        Log.i("CITIES", "fillCityContainer: size " + cities.size());
+        Log.i("CITIES", "visivle " + (cityListView.getVisibility() == View.VISIBLE));
+        cityAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, cities);
         cityListView.setAdapter(cityAdapter);
     }
 
