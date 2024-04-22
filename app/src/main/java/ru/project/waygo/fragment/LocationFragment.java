@@ -72,6 +72,7 @@ public class LocationFragment extends Fragment {
 
     }
 
+
     public void setRouteLength(String routeLength) {
         this.routeLength = routeLength + " км";
     }

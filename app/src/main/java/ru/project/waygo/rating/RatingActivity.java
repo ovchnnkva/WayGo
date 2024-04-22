@@ -69,14 +69,12 @@ public class RatingActivity extends AppCompatActivity {
         call.enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                if(response.isSuccessful()){
-                    startActivity(new Intent(context, HomeActivity.class));
-                }
+                startActivity(new Intent(context, HomeActivity.class));
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-
+                startActivity(new Intent(context, HomeActivity.class));
             }
         });
     }
