@@ -6,6 +6,8 @@
     <string name="clear">Очистить</string>
     <string name="no">Нет</string>
     <string name="yes">Да</string>
+    <string name="moscow">Москва</string>
+    <string name="city_name">Название города</string>
     <string name="registration_question">Ещё не зарегистрированы?</string>
     <string name="registration">Регистрация</string>
     <string name="register">Зарегистрироваться</string>

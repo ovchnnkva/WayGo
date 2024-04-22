@@ -8,6 +8,7 @@ import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import ru.project.waygo.dto.point.PointCheckInDTO;
@@ -25,7 +26,10 @@ public interface UserService {
     Call<UserDTO> getByUid(@Query("uuid") String uid);
 
     @POST("api/user/estimate")
-    Call<Void> createRateRoute(@Query("userId") long userId, @Query("routeId") long routeId, @Query("dto") RouteGradeDTO dto);
+    Call<Void> createRateRoute(@Query("userId") long userId, @Query("routeId") long routeId, @Body RouteGradeDTO dto);
+
+    @PUT("api/user")
+    Call<Void> updateUser(@Body UserDTO dto);
 
     @POST("api/user/route/chekin")
     Call<Void> createCheckInOnRoute(@Query("userId") long userId, @Query("routeId") long routeId, @Query("dto") RouteCheckInDTO dto);

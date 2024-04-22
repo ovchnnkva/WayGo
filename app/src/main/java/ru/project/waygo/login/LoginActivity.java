@@ -1,6 +1,7 @@
 package ru.project.waygo.login;
 
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
+import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.NAME_USER_AUTH_FILE;
@@ -151,6 +152,7 @@ public class LoginActivity extends BaseActivity {
         editor.putString(UID_USER_AUTH_FILE, userDTO.getUid());
         editor.putString(ID_USER_AUTH_FILE, userDTO.getId() + "");
         editor.putString(NAME_USER_AUTH_FILE, userDTO.getName());
+        editor.putString(CITY_USER_AUTH_FILE, getResources().getString(R.string.moscow));
         editor.apply();
     }
 }

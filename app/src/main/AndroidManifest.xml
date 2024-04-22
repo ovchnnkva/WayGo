@@ -59,11 +59,11 @@
         <activity
             android:name=".login.RegistrationActivity"
             android:exported="true"
-            android:noHistory="true" />
+            android:noHistory="true"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".login.LoginActivity"
             android:exported="true"
-            android:noHistory="true"
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".map.MapBoxActivity"
@@ -82,8 +82,7 @@
             android:exported="true"></activity>
         <activity
             android:name=".main.MainActivity"
-            android:exported="true"
-            android:noHistory="true">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

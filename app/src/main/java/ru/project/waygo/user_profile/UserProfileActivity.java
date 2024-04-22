@@ -36,6 +36,9 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Objects;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.dto.user.UserDTO;
@@ -44,6 +47,8 @@ import ru.project.waygo.mail.MailSenderAsync;
 import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.main.MainActivity;
 import ru.project.waygo.map.MapBoxGeneralActivity;
+import ru.project.waygo.retrofit.RetrofitConfiguration;
+import ru.project.waygo.retrofit.services.UserService;
 
 public class UserProfileActivity extends BaseActivity implements TabLayout.OnTabSelectedListener {
     private ConstraintLayout accountLayout;
@@ -61,6 +66,8 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
     private MaterialButton sendFeedbackButton;
     private MaterialButton changePasswordButton;
     private UserDTO userDTO;
+    
+    private RetrofitConfiguration retrofit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +79,9 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
+        
+        retrofit = new RetrofitConfiguration();
+        
         accountLayout = findViewById(R.id.account_layout);
         feedbackLayout = findViewById(R.id.feedback_layout);
         subscribeLayout = findViewById(R.id.subscribe_layout);
@@ -143,6 +152,8 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
                     saveChanges.setTextColor(getResources().getColor(R.color.white));
                     saveChanges.getBackground().setColorFilter(Color.parseColor("#7A67FE"), PorterDuff.Mode.SRC);
                     saveChanges.setEnabled(true);
+                    userDTO.setName(nameField.getText().toString());
+                    userDTO.setEmail(emailField.getText().toString());
                 } else {
                     saveChanges.setTextColor(getResources().getColor(R.color.black));
                     saveChanges.getBackground().setColorFilter(Color.parseColor("#DDDDDD"), PorterDuff.Mode.SRC);
@@ -162,11 +173,32 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
         saveChanges.setOnClickListener(view -> {
             if(isUpdateUserEmail()) {
                 fireBaseUpdateEmail();
-                updatePreferences();
-            }
+            } 
+            
+            updateUser();
         });
 
         sendFeedbackButton.setOnClickListener(view -> sendFeedback());
+    }
+    
+    private void updateUser() {
+        UserService service = retrofit.createService(UserService.class);
+        Call<Void> call = service.updateUser(userDTO);
+        call.enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if(response.isSuccessful()) {
+                    updatePreferences();
+                } else {
+                    Toast.makeText(UserProfileActivity.this, "Ошибка сервера. Повторите попытку позже", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(UserProfileActivity.this, "Ошибка сервера. Повторите попытку позже", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     private void fireBaseUpdateEmail() {
@@ -269,7 +301,7 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
         editor.putString(NAME_USER_AUTH_FILE, nameField.getText().toString());
         editor.putString(EMAIL_FROM_AUTH_FILE, emailField.getText().toString());
     }
-
+    
     private String getPasswordFromPreferences() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         return preferences.getString(PASS_FROM_AUTH_FILE,"");
