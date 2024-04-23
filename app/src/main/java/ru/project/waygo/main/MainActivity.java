@@ -35,6 +35,24 @@ public class MainActivity extends BaseActivity {
         addListeners();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (isAuthorizedUser()) {
+            Log.i("AUTH", "isAuthorizedUser: " + true);
+            logIn();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isAuthorizedUser()) {
+            Log.i("AUTH", "isAuthorizedUser: " + true);
+            logIn();
+        }
+    }
+
     private void addListeners() {
         loginButton.setOnClickListener(e ->
             this.startActivity(new Intent(MainActivity.this, LoginActivity.class)));

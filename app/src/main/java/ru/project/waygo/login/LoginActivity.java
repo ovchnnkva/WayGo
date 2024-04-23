@@ -45,8 +45,6 @@ public class LoginActivity extends BaseActivity {
     private MaterialButton registrationButton;
     private TextInputEditText passwordField;
     private TextInputEditText emailFields;
-    private TextInputLayout passwordLayout;
-    private TextInputLayout emailLayout;
     private RetrofitConfiguration retrofit;
 
     private String email;
@@ -71,8 +69,6 @@ public class LoginActivity extends BaseActivity {
         registrationButton = findViewById(R.id.button_registration);
         passwordField = findViewById(R.id.password_field);
         emailFields = findViewById(R.id.email_field);
-        passwordLayout = findViewById(R.id.password_layout);
-        emailLayout = findViewById(R.id.email_layout);
         retrofit = new RetrofitConfiguration();
 
         addListeners();
@@ -80,6 +76,7 @@ public class LoginActivity extends BaseActivity {
 
     private void logIn() {
         startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+        finish();
     }
 
     private void addListeners() {
@@ -152,7 +149,7 @@ public class LoginActivity extends BaseActivity {
         editor.putString(UID_USER_AUTH_FILE, userDTO.getUid());
         editor.putString(ID_USER_AUTH_FILE, userDTO.getId() + "");
         editor.putString(NAME_USER_AUTH_FILE, userDTO.getName());
-        editor.putString(CITY_USER_AUTH_FILE, getResources().getString(R.string.moscow));
+        editor.putString(CITY_USER_AUTH_FILE, getResources().getString(R.string.rostov));
         editor.apply();
     }
 }

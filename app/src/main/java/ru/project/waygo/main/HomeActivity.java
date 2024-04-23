@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 import androidx.activity.EdgeToEdge;
@@ -113,7 +114,9 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
         retrofit = new RetrofitConfiguration();
 
-        cityCurrent = getCityCurrent();
+        cityCurrent = !getCityCurrent().isEmpty()
+                ? getCityCurrent()
+                : getResources().getString(R.string.rostov);
         cityButton.setText(cityCurrent);
 
         savePreferences();
@@ -161,7 +164,8 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
 
     private long getUserId() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
-        return Long.parseLong(preferences.getString(ID_USER_AUTH_FILE, ""));
+        String userId = preferences.getString(ID_USER_AUTH_FILE, "");
+        return !userId.isEmpty() ? Long.parseLong(userId) : 1L;
     }
 
     private void setListeners() {
@@ -211,6 +215,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             homeLayout.setVisibility(View.INVISIBLE);
             hideIndicator();
             citySearchLayout.setVisibility(View.VISIBLE);
+            searchCity.setText(cityCurrent);
         });
 
         cityListView.setOnItemClickListener((adapterView, view, i, l) -> {
@@ -350,6 +355,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             @Override
             public void onFailure(Call<List<RouteDTO>> call, Throwable t) {
                 hideIndicator();
+                Toast.makeText(HomeActivity.this, "Ошибка соединения", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -372,6 +378,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             @Override
             public void onFailure(Call<List<Long>> call, Throwable t) {
                 hideIndicator();
+                Toast.makeText(HomeActivity.this, "Ошибка соединения", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -391,6 +398,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             @Override
             public void onFailure(Call<List<CityDto>> call, Throwable t) {
                 hideIndicator();
+                Toast.makeText(HomeActivity.this, "Ошибка соединения", Toast.LENGTH_LONG).show();
             }
         });
 

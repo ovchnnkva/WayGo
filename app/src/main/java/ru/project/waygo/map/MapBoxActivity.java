@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -42,6 +43,8 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -85,6 +88,8 @@ import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 import com.mapbox.turf.TurfMeasurement;
 import com.smarteist.autoimageslider.SliderView;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -92,17 +97,25 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import lombok.var;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
+import ru.project.waygo.dto.ar.ArMetaInfoDTO;
 import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.SliderAdapter;
 import ru.project.waygo.ar.ArActivity;
 import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.rating.RatingActivity;
+import ru.project.waygo.retrofit.RetrofitConfiguration;
+import ru.project.waygo.retrofit.services.PointService;
+import ru.project.waygo.utils.CacheUtils;
 
 public class MapBoxActivity extends BaseActivity {
     private MapView mapView;
@@ -134,6 +147,8 @@ public class MapBoxActivity extends BaseActivity {
     private long routeId;
     private boolean isFromRoute;
     private ConstraintLayout layoutPlayer;
+    private RetrofitConfiguration retrofit;
+    private String nameARModel = "";
 
     private final Runnable updateSongTime = new Runnable() {
         @SuppressLint("DefaultLocale")
@@ -220,6 +235,7 @@ public class MapBoxActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map_view);
 
+        retrofit = new RetrofitConfiguration();
         mapView = findViewById(R.id.mapView);
         focusLocationBtn = findViewById(R.id.focusLocation);
         slider = findViewById(R.id.slider_map);
@@ -342,9 +358,9 @@ public class MapBoxActivity extends BaseActivity {
             });
 
             arButton.setOnClickListener(view -> {
-                Intent intent = new Intent(this, ArActivity.class);
-                intent.putExtra("pointId", currentPoint.getId());
-                startActivity(intent);
+                    Intent intent = new Intent(this, ArActivity.class);
+                    intent.putExtra("model", nameARModel);
+                    startActivity(intent);
             });
 
             locationComponentPlugin.addOnIndicatorPositionChangedListener(point -> {
@@ -354,6 +370,30 @@ public class MapBoxActivity extends BaseActivity {
         });
     }
 
+    private void getARModel(long pointId) {
+        PointService pointService = retrofit.createService(PointService.class);
+
+        Call<ArMetaInfoDTO> ar = pointService.getArMetaInfo(pointId);
+        ar.enqueue(new Callback<ArMetaInfoDTO>() {
+            @Override
+            public void onResponse(Call<ArMetaInfoDTO> call, Response<ArMetaInfoDTO> response) {
+                if(response.isSuccessful()) {
+                    nameARModel = response.body().getKey();
+                    arButton.setVisibility(View.VISIBLE);
+                } else {
+                    nameARModel = "";
+                    arButton.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ArMetaInfoDTO> call, Throwable t) {
+                nameARModel = "";
+                arButton.setVisibility(View.INVISIBLE);
+            }
+        });
+
+    }
     private void playerStop() {
         if(player.isPlaying()) {
             player.stop();
@@ -498,6 +538,7 @@ public class MapBoxActivity extends BaseActivity {
         }
 
         createAudioPlayer(nextPoint.getId());
+        getARModel(nextPoint.getId());
 
         return Point.fromLngLat(Objects.requireNonNull(nextPoint).getLongitude(), nextPoint.getLatitude());
     }

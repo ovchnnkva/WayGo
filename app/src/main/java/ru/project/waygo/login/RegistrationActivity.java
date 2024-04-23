@@ -177,6 +177,7 @@ public class RegistrationActivity extends BaseActivity {
                 if(response.isSuccessful()) {
                     savePreferences(response.body().getId(), uid);
                     startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                    finish();
                 } else {
                     Log.d("USER_GET_UID", "onResponse: пользователь не найден");
                 }
@@ -197,7 +198,7 @@ public class RegistrationActivity extends BaseActivity {
         editor.putString(UID_USER_AUTH_FILE, uid);
         editor.putString(ID_USER_AUTH_FILE, id + "");
         editor.putString(NAME_USER_AUTH_FILE, nameField.getText().toString());
-        editor.putString(CITY_USER_AUTH_FILE, getResources().getString(R.string.moscow));
+        editor.putString(CITY_USER_AUTH_FILE, getResources().getString(R.string.rostov));
         editor.apply();
     }
 }

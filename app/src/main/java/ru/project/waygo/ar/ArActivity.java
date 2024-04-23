@@ -140,66 +140,51 @@ public class ArActivity extends BaseActivity {
 
         retrofit = new RetrofitConfiguration();
 
-
         Intent intent = getIntent();
+        String nameModel = intent.getStringExtra("model");
+        String[] parts = nameModel.split("\\.");
         long id = 1l;
-        PointService pointService = retrofit.createService(PointService.class);
 
-        Call<ArMetaInfoDTO> ar = pointService.getArMetaInfo(intent.getLongExtra("pointId",0));
-        ar.enqueue(new Callback<ArMetaInfoDTO>() {
-            @Override
-            public void onResponse(Call<ArMetaInfoDTO> call, Response<ArMetaInfoDTO> response) {
-
-                configCamera();
-                String[] parts = response.body().getKey().split("\\.");
-                String name = response.body().getKey();
-                if(CacheUtils.getObjectFileCache(getApplicationContext(),parts[0]) != null){
-                    File file = null;
-                    try {
-                        file = File.createTempFile(parts[0],parts[1]);
-                        FileOutputStream fos = new FileOutputStream(file.getPath());
-                        fos.write(CacheUtils.getObjectFileCache(getApplicationContext(),parts[0]));
-                        fos.flush();
-                        fos.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    try {
-                        buildModel(file);
-                        Toast.makeText(getApplicationContext(),"Ok!",Toast.LENGTH_SHORT).show();
-                        return;
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-
-                try {
-                    final File localFile = File.createTempFile(parts[0], parts[1]);
-                    StorageReference reference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://waygodb-9ccc6.appspot.com/").child("ar/pistol.glb");
-                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-                    StrictMode.setThreadPolicy(policy);
-                    AtomicLong size = new AtomicLong();
-                    reference.getMetadata().addOnSuccessListener(storageMetadata -> {
-                        size.set(storageMetadata.getSizeBytes() / (1024 * 1024));
-                        Log.i("ARR", "onResponse: "+storageMetadata.getName());
-                        dialog.setText("\n" + storageMetadata.getName() + " (" + size + "MB).");
-                        dialog.preBuild(creteOnOkListener(reference, localFile,parts[0],storageMetadata.getSizeBytes()));
-                        dialog.show();
-                    }).addOnFailureListener(e -> Log.i("ARR", "onFailure: ." + e.getLocalizedMessage()));
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-
+        configCamera();
+        if(CacheUtils.getObjectFileCache(getApplicationContext(),parts[0]) != null){
+            File file = null;
+            try {
+                file = File.createTempFile(parts[0],parts[1]);
+                FileOutputStream fos = new FileOutputStream(file.getPath());
+                fos.write(CacheUtils.getObjectFileCache(getApplicationContext(),parts[0]));
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-
-            @Override
-            public void onFailure(Call<ArMetaInfoDTO> call, Throwable t) {
-
+            try {
+                buildModel(file);
+                Toast.makeText(getApplicationContext(),"Ok!",Toast.LENGTH_SHORT).show();
+                return;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        });
+        }
 
+        try {
+            final File localFile = File.createTempFile(parts[0], parts[1]);
+            StorageReference reference = FirebaseStorage.getInstance().getReferenceFromUrl("gs://waygodb-9ccc6.appspot.com/")
+                    .child("ar/" +  nameModel);
 
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+            AtomicLong size = new AtomicLong();
+            reference.getMetadata().addOnSuccessListener(storageMetadata -> {
+                size.set(storageMetadata.getSizeBytes() / (1024 * 1024));
+                Log.i("ARR", "onResponse: "+storageMetadata.getName());
+                dialog.setText("\n" + storageMetadata.getName() + " (" + size + "MB).");
+                dialog.preBuild(creteOnOkListener(reference, localFile,parts[0],storageMetadata.getSizeBytes()));
+                dialog.show();
+            }).addOnFailureListener(e -> Log.i("ARR", "onFailure: ." + e.getLocalizedMessage()));
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
