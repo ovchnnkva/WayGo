@@ -51,7 +51,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-    implementation 'com.mapbox.navigation:android:2.15.2'
+    implementation 'com.mapbox.navigation:android:2.17.1'
     implementation 'com.google.firebase:firebase-auth:22.3.1'
     implementation 'com.squareup.retrofit2:converter-scalars:2.9.0'
     compileOnly 'org.projectlombok:lombok:1.18.32'
