@@ -94,6 +94,7 @@
                 android:layout_marginBottom="11dp"
                 android:background="@drawable/ar_button"
                 android:backgroundTint="@null"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toTopOf="@+id/descriprion_point"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.951"

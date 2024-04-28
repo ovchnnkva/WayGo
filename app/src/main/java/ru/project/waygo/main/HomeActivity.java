@@ -8,10 +8,13 @@ import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,8 +29,11 @@ import android.widget.Toast;
 
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -47,6 +53,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.dto.CityDto;
+import ru.project.waygo.map.MapBoxActivity;
 import ru.project.waygo.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
@@ -88,6 +95,9 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private boolean isExcursion = true;
     private ConstraintLayout emptyLayout;
     private ProgressBar loader;
+
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+    });
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,10 +140,15 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             switch(item.getItemId())
             {
                 case R.id.action_map:
-                    startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
-                    overridePendingTransition(0,0);
-                    finish();
-                    return true;
+                    if(checkPermissions()) {
+                        startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
+                        overridePendingTransition(0, 0);
+                        finish();
+                        return true;
+                    } else {
+                        launchPermissions();
+                    }
+                    return  false;
                 case R.id.action_main:
                     return true;
                 case R.id.action_favorites:
@@ -157,6 +172,27 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         setListeners();
     }
 
+    private boolean checkPermissions() {
+        boolean notificationPermission = true;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission = (ActivityCompat.checkSelfPermission(HomeActivity.this,
+                    Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+        }
+        return notificationPermission
+                && (ActivityCompat.checkSelfPermission(HomeActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(HomeActivity.this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+    }
+
+    private void launchPermissions() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
     private String getCityCurrent() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         return preferences.getString(CITY_USER_AUTH_FILE, "");

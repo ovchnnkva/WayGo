@@ -7,15 +7,21 @@ import static ru.project.waygo.utils.CacheUtils.getFileCache;
 import static ru.project.waygo.utils.CacheUtils.getFileName;
 import static ru.project.waygo.utils.IntentExtraUtils.getPointsFromExtra;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -49,7 +55,8 @@ public class RouteDetailsActivity extends BaseActivity {
     private MaterialButton goToExcurssion;
     private String pointsExtra;
     private long routeId;
-
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+    });
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +71,7 @@ public class RouteDetailsActivity extends BaseActivity {
         slider = findViewById(R.id.slider);
 
         slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-        slider.setScrollTimeInSec(2);
+        slider.setScrollTimeInSec(4);
         slider.setAutoCycle(true);
         slider.startAutoCycle();
 
@@ -89,14 +96,41 @@ public class RouteDetailsActivity extends BaseActivity {
         Context context = RouteDetailsActivity.this;
         Intent intent = new Intent(context, MapBoxActivity.class);
         goToExcurssion.setOnClickListener(e -> {
-            intent.putExtra("routeId", routeId);
-            intent.putExtra("name", name.getText().toString());
-            intent.putExtra("description", description.getText().toString());
-            intent.putExtra("points", pointsExtra);
-            intent.putExtra("fromRoute", true);
-            context.startActivity(intent);
+            if(checkPermissions()) {
+                intent.putExtra("routeId", routeId);
+                intent.putExtra("name", name.getText().toString());
+                intent.putExtra("description", description.getText().toString());
+                intent.putExtra("points", pointsExtra);
+                intent.putExtra("fromRoute", true);
+                context.startActivity(intent);
+            } else {
+                launchPermissions();
+            }
         });
     }
+
+    private boolean checkPermissions() {
+        boolean notificationPermission = true;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission = (ActivityCompat.checkSelfPermission(RouteDetailsActivity.this,
+                    Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+        }
+        return notificationPermission
+                && (ActivityCompat.checkSelfPermission(RouteDetailsActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(RouteDetailsActivity.this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+    }
+
+    private void launchPermissions() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
+
     private void fillFromIntent() {
         Intent intent = getIntent();
         routeId = intent.getLongExtra("id", 0);

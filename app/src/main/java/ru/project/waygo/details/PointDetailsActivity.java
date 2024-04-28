@@ -7,14 +7,20 @@ import static ru.project.waygo.utils.CacheUtils.getFileName;
 import static ru.project.waygo.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.waygo.utils.IntentExtraUtils.getRoutesFromExtra;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,12 +42,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
-import ru.project.waygo.dto.point.PointDTO;
-import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.adapter.RoutePhotosAdapter;
 import ru.project.waygo.adapter.SliderAdapter;
+import ru.project.waygo.dto.point.PointDTO;
 import ru.project.waygo.dto.route.RouteDTO;
 import ru.project.waygo.fragment.RoutePhotosFragment;
+import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.map.MapBoxActivity;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.RouteService;
@@ -58,6 +64,8 @@ public class PointDetailsActivity extends BaseActivity {
     private List<RouteDTO> routesWithPoint = new ArrayList<>();
     private MaterialButton goToExcurssion;
     private PointDTO pointDTO;
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+    });
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,7 +82,7 @@ public class PointDetailsActivity extends BaseActivity {
         goToExcurssion = findViewById(R.id.go_to_excursion);
         slider = findViewById(R.id.slider_points);
         slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-        slider.setScrollTimeInSec(2);
+        slider.setScrollTimeInSec(4);
         slider.setAutoCycle(true);
         slider.startAutoCycle();
         favorite = findViewById(R.id.toggle_favorite);
@@ -103,12 +111,37 @@ public class PointDetailsActivity extends BaseActivity {
         Context context = PointDetailsActivity.this;
         Intent intent = new Intent(context, MapBoxActivity.class);
         goToExcurssion.setOnClickListener(e -> {
-            intent.putExtra("name", namePointField.getText().toString());
-            intent.putExtra("description", descriptionField.getText().toString());
-            intent.putExtra("points", getPointsExtra(List.of(pointDTO)));
-            intent.putExtra("fromRoute", false);
-            context.startActivity(intent);
+            if(checkPermissions()) {
+                intent.putExtra("name", namePointField.getText().toString());
+                intent.putExtra("description", descriptionField.getText().toString());
+                intent.putExtra("points", getPointsExtra(List.of(pointDTO)));
+                intent.putExtra("fromRoute", false);
+                context.startActivity(intent);
+            } else {
+                launchPermissions();
+            }
         });
+    }
+    private boolean checkPermissions() {
+        boolean notificationPermission = true;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission = (ActivityCompat.checkSelfPermission(PointDetailsActivity.this,
+                    Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+        }
+        return notificationPermission
+                && (ActivityCompat.checkSelfPermission(PointDetailsActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(PointDetailsActivity.this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+    }
+
+    private void launchPermissions() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
     }
 
     private void fillFromIntent() {

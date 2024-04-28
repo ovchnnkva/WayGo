@@ -20,6 +20,8 @@
     <string name="repeat_password">Повторите пароль</string>
     <string name="name">Имя</string>
     <string name="search">Что хотите увидеть?</string>
+    <string name="main_location_name">Центральный универмаг</string>
+    <string name="main_location_description">Старейший торговый центр Ростова-на-Дону</string>
     <string name="test_location_name">Сталинские высотки</string>
     <string name="test_location_description">Семь высотных зданий, строившихся в Москве в 1947—1957 годах. </string>
     <string name="test_route_length">3,2 км</string>

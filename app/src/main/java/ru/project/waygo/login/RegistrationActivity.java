@@ -40,7 +40,6 @@ import ru.project.waygo.retrofit.services.UserService;
 public class RegistrationActivity extends BaseActivity {
     private TextInputEditText passwordField;
     private TextInputEditText passwortRepeatField;
-    private TextInputLayout passwordLayout;
     private TextInputEditText emailField;
     private TextInputEditText nameField;
     private MaterialButton registrationButton;
@@ -59,7 +58,6 @@ public class RegistrationActivity extends BaseActivity {
         });
 
         passwordField = findViewById(R.id.password_field);
-        passwordLayout = findViewById(R.id.password_layout);
         passwortRepeatField = findViewById(R.id.repeat_password_field);
         emailField = findViewById(R.id.email_field);
         nameField = findViewById(R.id.name_field);
@@ -94,9 +92,9 @@ public class RegistrationActivity extends BaseActivity {
 
         Pattern patternDegits = Pattern.compile("[1-9]");
 
-        if((passwordField.getText() != null) && (pass.length() > 8) && (patternDegits.matcher(pass).find())) {
+        if((passwordField.getText() != null) && (pass.length() >= 8) && (patternDegits.matcher(pass).find())) {
             return true;
-        } else if (pass.length() < 9){
+        } else if (pass.length() < 8){
             Toast.makeText(RegistrationActivity.this, "Пароль слишком короткий", Toast.LENGTH_LONG).show();
         } else if (!patternDegits.matcher(pass).find()) {
             Toast.makeText(RegistrationActivity.this, "Пароль должен содержать цифры", Toast.LENGTH_LONG).show();

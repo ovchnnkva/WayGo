@@ -75,6 +75,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             if(holder.favorite.isChecked()) {
                 saveFavorite(holder.type, holder.locationId);
             } else {
+                fragment.setNeedReload(true);
                 deleteFavorite(holder.type, holder.locationId);
             }
         });

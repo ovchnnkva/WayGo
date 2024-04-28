@@ -260,12 +260,7 @@ public class ArActivity extends BaseActivity {
         });
     }
 
-
-
     public void createSession() throws UnavailableDeviceNotCompatibleException, UnavailableSdkTooOldException, UnavailableArcoreNotInstalledException, UnavailableApkTooOldException, CameraNotAvailableException {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
-        }
         session = new Session(this);
         Config config = new Config(session);
         config.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);

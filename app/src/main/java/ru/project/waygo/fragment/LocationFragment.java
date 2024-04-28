@@ -36,6 +36,7 @@ public class LocationFragment extends Fragment {
     private double longitude;
 
     private double latitude;
+    private boolean needReload = false;
 
     private TypeLocation typeLocation= TypeLocation.POINT;
     private List<PointDTO> points;

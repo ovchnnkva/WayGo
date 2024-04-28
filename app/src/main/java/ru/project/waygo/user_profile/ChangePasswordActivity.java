@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
 import ru.project.waygo.favorite.FavoriteActivity;
+import ru.project.waygo.login.RegistrationActivity;
 import ru.project.waygo.mail.MailSenderAsync;
 import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.map.MapBoxGeneralActivity;
@@ -128,7 +129,9 @@ public class ChangePasswordActivity extends BaseActivity {
     }
 
     private void checkVerification() {
-       if(verificationCodeField.getText() == null || verificationCodeField.getText().toString().isBlank()) {
+        if(emailField.getText() == null || emailField.getText().toString().isBlank()) {
+            Toast.makeText(this, "Введите email", Toast.LENGTH_LONG).show();
+        }else if(verificationCodeField.getText() == null || verificationCodeField.getText().toString().isBlank()) {
            Toast.makeText(this, "Введите код", Toast.LENGTH_LONG).show();
        } else if (!verificationCodeField.getText().toString().equals(currentCode)) {
            Toast.makeText(this, "Неверный код", Toast.LENGTH_LONG).show();
@@ -145,10 +148,12 @@ public class ChangePasswordActivity extends BaseActivity {
 
         Pattern patternDegits = Pattern.compile("[1-9]");
 
-        if((newPasswordField.getText() != null) && (pass.length() > 8) && (patternDegits.matcher(pass).find())) {
+        if((newPasswordField.getText() != null) && (pass.length() >= 8) && (patternDegits.matcher(pass).find())) {
             return true;
-        } else {
-            newPasswordField.setError("Пароль должен быть длинее 8-ми символов и содержать хотя бы одну цифру");
+        } else if (pass.length() < 8){
+            Toast.makeText(ChangePasswordActivity.this, "Пароль слишком короткий", Toast.LENGTH_LONG).show();
+        } else if (!patternDegits.matcher(pass).find()) {
+            Toast.makeText(ChangePasswordActivity.this, "Пароль должен содержать цифры", Toast.LENGTH_LONG).show();
         }
         return false;
     }

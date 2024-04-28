@@ -6,15 +6,21 @@ import static ru.project.waygo.utils.IntentExtraUtils.getPointsExtra;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -57,6 +63,8 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
     private ConstraintLayout emptyLayout;
     private MaterialButton goHomeButton;
     private ProgressBar loader;
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+    });
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,10 +94,15 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
             switch(item.getItemId())
             {
                 case R.id.action_map:
-                    startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
-                    overridePendingTransition(0,0);
-                    finish();
-                    return true;
+                    if(checkPermissions()) {
+                        startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
+                        overridePendingTransition(0, 0);
+                        finish();
+                        return true;
+                    } else {
+                        launchPermissions();
+                    }
+                    return  false;
                 case R.id.action_main:
                     startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                     overridePendingTransition(0,0);
@@ -109,7 +122,27 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
         getRouteFavorites();
         goHomeButton.setOnClickListener(view -> bottomNavigationView.setSelectedItemId(R.id.action_main));
     }
+    private boolean checkPermissions() {
+        boolean notificationPermission = true;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission = (ActivityCompat.checkSelfPermission(FavoriteActivity.this,
+                    Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+        }
+        return notificationPermission
+                && (ActivityCompat.checkSelfPermission(FavoriteActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(FavoriteActivity.this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
 
+    }
+
+    private void launchPermissions() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
     private long getUserId() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);
         return Long.parseLong(preferences.getString(ID_USER_AUTH_FILE, ""));
@@ -204,10 +237,6 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
             }
         });
     }
-    private void cacheImages(String image, long id, String type) {
-        cacheFiles(FavoriteActivity.this, getFileName(type, id), image);
-    }
-
     private void cacheImages(List<String> image, long id, String type) {
         cacheFiles(FavoriteActivity.this, getFileName(type, id), image);
     }
@@ -229,19 +258,22 @@ public class FavoriteActivity extends BaseActivity implements TabLayout.OnTabSel
         switch (tab.getPosition()) {
             case 0: {
                 recyclerView.setVisibility(View.INVISIBLE);
-                if(currentRoutes.isEmpty()) getRouteFavorites();
+                if(currentRoutes.isEmpty() || needReload(currentRoutes)) getRouteFavorites();
                 else fillRecyclePoint(currentRoutes);
                 break;
             }
             case 1: {
                 recyclerView.setVisibility(View.INVISIBLE);
-                if (currentPoint.isEmpty()) getPointsFavorite();
+                if (currentPoint.isEmpty() || needReload(currentPoint)) getPointsFavorite();
                 else fillRecyclePoint(currentPoint);
                 break;
             }
         }
     }
 
+    private boolean needReload(List<LocationFragment> fragments) {
+        return fragments.stream().anyMatch(LocationFragment::isNeedReload);
+    }
 
     @Override
     public void onTabUnselected(TabLayout.Tab tab) {

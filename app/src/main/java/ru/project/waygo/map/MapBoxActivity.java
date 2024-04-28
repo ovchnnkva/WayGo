@@ -22,11 +22,9 @@ import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -40,11 +38,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -88,8 +85,6 @@ import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
 import com.mapbox.turf.TurfMeasurement;
 import com.smarteist.autoimageslider.SliderView;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -97,7 +92,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import lombok.var;
@@ -115,7 +109,6 @@ import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.rating.RatingActivity;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.PointService;
-import ru.project.waygo.utils.CacheUtils;
 
 public class MapBoxActivity extends BaseActivity {
     private MapView mapView;
@@ -143,7 +136,6 @@ public class MapBoxActivity extends BaseActivity {
     private ToggleButton speedAudioButton;
     private MaterialButton nextPointButton;
     private List<PointDTO> pointsDto;
-    private PointDTO currentPoint;
     private long routeId;
     private boolean isFromRoute;
     private ConstraintLayout layoutPlayer;
@@ -240,7 +232,7 @@ public class MapBoxActivity extends BaseActivity {
         focusLocationBtn = findViewById(R.id.focusLocation);
         slider = findViewById(R.id.slider_map);
         slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
-        slider.setScrollTimeInSec(2);
+        slider.setScrollTimeInSec(4);
         slider.setAutoCycle(true);
         slider.startAutoCycle();
         playButton = findViewById(R.id.toggle_play);
@@ -283,22 +275,7 @@ public class MapBoxActivity extends BaseActivity {
         mapboxNavigation.registerRoutesObserver(routesObserver);
         mapboxNavigation.registerLocationObserver(locationObserver);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(MapBoxActivity.this,
-                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            }
-        }
-
-        if (ActivityCompat.checkSelfPermission(MapBoxActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(MapBoxActivity.this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-            activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
-        } else {
-            mapboxNavigation.startTripSession();
-        }
+        mapboxNavigation.startTripSession();
 
         focusLocationBtn.hide();
         LocationComponentPlugin locationComponentPlugin = getLocationComponent(mapView);
@@ -335,7 +312,12 @@ public class MapBoxActivity extends BaseActivity {
                 pointAnnotationManager.create(pointAnnotationOptions);
             });
 
-            fetchRoute();
+            if(isFromRoute){
+                createAudioPlayer(routeId);
+                fetchAllRoute();
+            } else {
+                fetchRoute();
+            }
 
             nextPointButton.setOnClickListener(view -> {
                 if(!pointsDto.isEmpty()) {
@@ -358,9 +340,13 @@ public class MapBoxActivity extends BaseActivity {
             });
 
             arButton.setOnClickListener(view -> {
+                if(checkPermissions()) {
                     Intent intent = new Intent(this, ArActivity.class);
                     intent.putExtra("model", nameARModel);
                     startActivity(intent);
+                } else {
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+                }
             });
 
             locationComponentPlugin.addOnIndicatorPositionChangedListener(point -> {
@@ -369,6 +355,12 @@ public class MapBoxActivity extends BaseActivity {
             });
         });
     }
+    
+    private boolean checkPermissions() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+
+    }
+
 
     private void getARModel(long pointId) {
         PointService pointService = retrofit.createService(PointService.class);
@@ -401,7 +393,7 @@ public class MapBoxActivity extends BaseActivity {
     }
 
     @SuppressLint("DefaultLocale")
-    private void createAudioPlayer(long pointId) {
+    private void createAudioPlayer(long routeId) {
         player.reset();
         handler = new Handler();
 
@@ -413,7 +405,7 @@ public class MapBoxActivity extends BaseActivity {
 
         player.setWakeMode(MapBoxActivity.this, PowerManager.PARTIAL_WAKE_LOCK);
         try {
-            player.setDataSource(SERVER_URL + "api/point/audio?pointId=" + pointId);
+            player.setDataSource(SERVER_URL + "api/route/audio?routeId=" + routeId);
             player.setOnPreparedListener(player -> layoutPlayer.setVisibility(View.VISIBLE));
             player.setOnErrorListener((player, what, extra)  -> {
                 layoutPlayer.setVisibility(View.GONE);
@@ -530,14 +522,22 @@ public class MapBoxActivity extends BaseActivity {
                 nextPoint = dto;
             }
         }
+        nameText.setText(nextPoint.getPointName());
+        descriptionText.setText(nextPoint.getDescription());
 
-        currentPoint = nextPoint;
+        List<Bitmap> bitmaps = getPointAllImages(nextPoint.getId());
+        fillSlider(bitmaps
+                .stream()
+                .map(SliderFragment::new)
+                .collect(Collectors.toList()));
+
         pointsDto.remove(nextPoint);
         if(pointsDto.isEmpty()) {
             nextPointButton.setText(getResources().getString(R.string.end_excursion));
+        } else {
+            nextPointButton.setText(getResources().getString(R.string.go_to_next_point));
         }
 
-        createAudioPlayer(nextPoint.getId());
         getARModel(nextPoint.getId());
 
         return Point.fromLngLat(Objects.requireNonNull(nextPoint).getLongitude(), nextPoint.getLatitude());
@@ -581,47 +581,13 @@ public class MapBoxActivity extends BaseActivity {
             @Override
             public void onSuccess(LocationEngineResult result) {
                 Location location = result.getLastLocation();
+                
+                if(checkUserLocation(location)) {
+                    Point origin = Point.fromLngLat(Objects.requireNonNull(location).getLongitude(), location.getLatitude());
+                    Point nextPoint = findNextPoint(origin);
 
-                List<Bearing> bearings = new ArrayList<>();
-                bearings.add(Bearing.builder()
-                        .angle(location.getBearing())
-                        .degrees(45.0)
-                        .build());
-
-                bearings.add(null);
-
-                Point origin = Point.fromLngLat(Objects.requireNonNull(location).getLongitude(), location.getLatitude());
-                Point nextPoint = findNextPoint(origin);
-                List<Point> currentPoints = new ArrayList<>(List.of(nextPoint, origin));
-
-                RouteOptions.Builder builder = RouteOptions.builder()
-                        .coordinatesList(currentPoints)
-                        .alternatives(false)
-                        .steps(true)
-                        .overview(DirectionsCriteria.OVERVIEW_FULL)
-                        .profile(DirectionsCriteria.PROFILE_WALKING)
-                        .bearingsList(bearings);
-                applyDefaultNavigationOptions(builder);
-
-                mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
-                    @Override
-                    public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
-                        mapboxNavigation.setNavigationRoutes(list);
-                        focusLocationBtn.performClick();
-                    }
-
-                    @Override
-                    public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
-                        Toast.makeText(MapBoxActivity.this, "Route request failed", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
-                        hideIndicator();
-                    }
-                });
-
-
+                    createRoute(new ArrayList<>(List.of(nextPoint)), origin, location.getBearing());
+                }
             }
 
             @Override
@@ -631,6 +597,77 @@ public class MapBoxActivity extends BaseActivity {
         });
     }
 
+    @SuppressLint("MissingPermission")
+    private void fetchAllRoute() {
+        showIndicator();
+        LocationEngine locationEngine = LocationEngineProvider.getBestLocationEngine(MapBoxActivity.this);
+        locationEngine.getLastLocation(new LocationEngineCallback<LocationEngineResult>() {
+            @Override
+            public void onSuccess(LocationEngineResult result) {
+                Location location = result.getLastLocation();
+
+                if(checkUserLocation(location)) {
+                    Point origin = Point.fromLngLat(Objects.requireNonNull(location).getLongitude(), location.getLatitude());
+                    List<Point> points = pointsDto.stream()
+                            .map(dto -> Point.fromLngLat(dto.getLongitude(), dto.getLatitude()))
+                            .collect(Collectors.toList());
+
+                    createRoute(new ArrayList<>(points), origin, location.getBearing());
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                hideIndicator();
+            }
+        });
+    }
+    private boolean checkUserLocation(Location location) {
+        if(location == null || location.getLatitude() == 0.0 || location.getLongitude() == 0.0) {
+            Toast.makeText(MapBoxActivity.this, "Включите геолокацию", Toast.LENGTH_LONG).show();
+            return false;
+        } else return true;
+    }
+    private void createRoute(List<Point> points, Point origin, float originBearing) {
+        List<Bearing> bearings = new ArrayList<>();
+        bearings.add(Bearing.builder()
+                .angle(originBearing)
+                .degrees(45.0)
+                .build());
+
+        for(int i = 0; i < points.size(); i ++) {
+            bearings.add(null);
+        }
+
+        points.add(origin);
+
+        RouteOptions.Builder builder = RouteOptions.builder()
+                .coordinatesList(points)
+                .alternatives(false)
+                .steps(true)
+                .overview(DirectionsCriteria.OVERVIEW_FULL)
+                .profile(DirectionsCriteria.PROFILE_WALKING)
+                .bearingsList(bearings);
+        applyDefaultNavigationOptions(builder);
+
+        mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
+            @Override
+            public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
+                mapboxNavigation.setNavigationRoutes(list);
+                focusLocationBtn.performClick();
+            }
+
+            @Override
+            public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
+                Toast.makeText(MapBoxActivity.this, "Route request failed", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCanceled(@NonNull RouteOptions routeOptions, @NonNull RouterOrigin routerOrigin) {
+                hideIndicator();
+            }
+        });
+    }
     protected void showIndicator() {
         loader.setVisibility(View.VISIBLE);
     }

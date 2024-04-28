@@ -7,10 +7,13 @@ import static ru.project.waygo.Constants.NAME_USER_AUTH_FILE;
 import static ru.project.waygo.Constants.PASS_FROM_AUTH_FILE;
 import static ru.project.waygo.Constants.UID_USER_AUTH_FILE;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,8 +22,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -68,6 +74,8 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
     private UserDTO userDTO;
     
     private RetrofitConfiguration retrofit;
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+    });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,10 +113,15 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
             switch(item.getItemId())
             {
                 case R.id.action_map:
-                    startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
-                    overridePendingTransition(0,0);
-                    finish();
-                    return true;
+                    if(checkPermissions()) {
+                        startActivity(new Intent(getApplicationContext(), MapBoxGeneralActivity.class));
+                        overridePendingTransition(0, 0);
+                        finish();
+                        return true;
+                    } else {
+                        launchPermissions();
+                    }
+                    return  false;
                 case R.id.action_main:
                     startActivity(new Intent(getApplicationContext(), HomeActivity.class));
                     overridePendingTransition(0,0);
@@ -126,6 +139,28 @@ public class UserProfileActivity extends BaseActivity implements TabLayout.OnTab
         });
         fillFromPreferences();
         setListeners();
+    }
+
+    private boolean checkPermissions() {
+        boolean notificationPermission = true;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission = (ActivityCompat.checkSelfPermission(UserProfileActivity.this,
+                    Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED);
+        }
+        return notificationPermission
+                && (ActivityCompat.checkSelfPermission(UserProfileActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(UserProfileActivity.this,
+                Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+
+    }
+
+    private void launchPermissions() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
+        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
+        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
     }
 
     private void setListeners() {

@@ -38,11 +38,13 @@ import ru.project.waygo.dto.user.UserDTO;
 import ru.project.waygo.main.HomeActivity;
 import ru.project.waygo.retrofit.RetrofitConfiguration;
 import ru.project.waygo.retrofit.services.UserService;
+import ru.project.waygo.user_profile.ChangePasswordActivity;
 
 public class LoginActivity extends BaseActivity {
 
     private MaterialButton loginButton;
     private MaterialButton registrationButton;
+    private MaterialButton forgotPassword;
     private TextInputEditText passwordField;
     private TextInputEditText emailFields;
     private RetrofitConfiguration retrofit;
@@ -69,6 +71,7 @@ public class LoginActivity extends BaseActivity {
         registrationButton = findViewById(R.id.button_registration);
         passwordField = findViewById(R.id.password_field);
         emailFields = findViewById(R.id.email_field);
+        forgotPassword = findViewById(R.id.button_forgot_password);
         retrofit = new RetrofitConfiguration();
 
         addListeners();
@@ -95,6 +98,7 @@ public class LoginActivity extends BaseActivity {
         });
 
         loginButton.setOnClickListener(e -> auth());
+        forgotPassword.setOnClickListener(e -> startActivity(new Intent(getApplicationContext(), ChangePasswordActivity.class)));
     }
 
     private void auth() {
