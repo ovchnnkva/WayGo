@@ -227,22 +227,7 @@ public class MapBoxGeneralActivity extends BaseActivity {
         mapboxNavigation.registerRoutesObserver(routesObserver);
         mapboxNavigation.registerLocationObserver(locationObserver);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ActivityCompat.checkSelfPermission(MapBoxGeneralActivity.this,
-                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-            }
-        }
-
-        if (ActivityCompat.checkSelfPermission(MapBoxGeneralActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                || ActivityCompat.checkSelfPermission(MapBoxGeneralActivity.this,
-                Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-            activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
-        } else {
-            mapboxNavigation.startTripSession();
-        }
+        mapboxNavigation.startTripSession();
 
         focusLocationBtn.hide();
         LocationComponentPlugin locationComponentPlugin = getLocationComponent(mapView);
@@ -334,6 +319,10 @@ public class MapBoxGeneralActivity extends BaseActivity {
             public void onSuccess(LocationEngineResult result) {
                 Location location = result.getLastLocation();
 
+                if(!checkUserLocation(location)) {
+                    return;
+                }
+
                 List<Bearing> bearings = new ArrayList<>();
                 bearings.add(Bearing.builder()
                         .angle(location.getBearing())
@@ -379,6 +368,13 @@ public class MapBoxGeneralActivity extends BaseActivity {
                 hideIndicator();
             }
         });
+    }
+
+    private boolean checkUserLocation(Location location) {
+        if(location == null || location.getLatitude() == 0.0 || location.getLongitude() == 0.0) {
+            Toast.makeText(MapBoxGeneralActivity.this, "Включите геолокацию", Toast.LENGTH_LONG).show();
+            return false;
+        } else return true;
     }
 
     protected void showIndicator() {

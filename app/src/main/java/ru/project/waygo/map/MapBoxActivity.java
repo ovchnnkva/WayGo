@@ -643,12 +643,11 @@ public class MapBoxActivity extends BaseActivity {
 
         RouteOptions.Builder builder = RouteOptions.builder()
                 .coordinatesList(points)
-                .alternatives(false)
                 .steps(true)
                 .overview(DirectionsCriteria.OVERVIEW_FULL)
+                .alternatives(false)
                 .profile(DirectionsCriteria.PROFILE_WALKING)
                 .bearingsList(bearings);
-        applyDefaultNavigationOptions(builder);
 
         mapboxNavigation.requestRoutes(builder.build(), new NavigationRouterCallback() {
             @Override

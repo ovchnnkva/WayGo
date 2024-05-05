@@ -10,7 +10,6 @@ import static ru.project.waygo.Constants.ID_USER_AUTH_FILE;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -20,7 +19,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -53,7 +51,6 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import ru.project.waygo.dto.CityDto;
-import ru.project.waygo.map.MapBoxActivity;
 import ru.project.waygo.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
@@ -187,11 +184,24 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     }
 
     private void launchPermissions() {
+        String[] permissions = {
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+        };
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            permissions = new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.POST_NOTIFICATIONS
+            };
         }
-        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        ActivityCompat.requestPermissions(
+                this,
+                permissions,
+                1
+        );
     }
     private String getCityCurrent() {
         SharedPreferences preferences = getSharedPreferences(AUTH_FILE_NAME, MODE_PRIVATE);

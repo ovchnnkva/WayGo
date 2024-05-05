@@ -124,11 +124,24 @@ public class RouteDetailsActivity extends BaseActivity {
     }
 
     private void launchPermissions() {
+        String[] permissions = {
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+        };
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+            permissions = new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.POST_NOTIFICATIONS
+            };
         }
-        activityResultLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION);
-        activityResultLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        ActivityCompat.requestPermissions(
+                this,
+                permissions,
+                1
+        );
     }
 
     private void fillFromIntent() {
