@@ -1,12 +1,17 @@
 package ru.project.waygo.main;
 
+import static com.google.android.material.internal.ContextUtils.getActivity;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.EMAIL_FROM_AUTH_FILE;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.MediaController;
+import android.widget.VideoView;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -18,6 +23,7 @@ import ru.project.waygo.login.RegistrationActivity;
 public class MainActivity extends BaseActivity {
     private MaterialButton loginButton;
     private MaterialButton registrationButton;
+    private VideoView videoView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,10 +37,23 @@ public class MainActivity extends BaseActivity {
 
         loginButton = findViewById(R.id.button_login);
         registrationButton = findViewById(R.id.button_registration);
+        videoView = findViewById(R.id.videoView);
 
         addListeners();
+        configureVideo();
     }
 
+    private void configureVideo() {
+        String packageName = this.getPackageName();
+        String path = "android.resource://" + packageName + "/raw/" + R.raw.main_video_start;
+        videoView.setVideoURI(Uri.parse(path));
+        videoView.start();
+        videoView.setOnCompletionListener(mediaPlayer -> {
+            String path1 = "android.resource://" + packageName + "/" + R.raw.main_video_next;
+            videoView.setVideoURI(Uri.parse(path1));
+            videoView.start();
+        });
+    }
     @Override
     protected void onStart() {
         super.onStart();
@@ -67,5 +86,13 @@ public class MainActivity extends BaseActivity {
 
     private void logIn() {
         startActivity(new Intent(MainActivity.this, HomeActivity.class));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        videoView.stopPlayback();
+        videoView.clearAnimation();
+        videoView.suspend();
     }
 }
