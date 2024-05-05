@@ -63,7 +63,7 @@ public class LocationFragment extends Fragment {
     public LocationFragment(RouteDTO routeDTO, String pointExtra) {
         this.locationId = routeDTO.getId();
         this.name = routeDTO.getRouteName();
-        this.routeLength = routeDTO.getLength() + " км";
+        this.routeLength = routeDTO.getLength() + " мин";
         this.description = routeDTO.getDescription();
         this.typeLocation = TypeLocation.ROUTE;
         this.points = routeDTO.getStopsOnRoute();
@@ -75,7 +75,7 @@ public class LocationFragment extends Fragment {
 
 
     public void setRouteLength(String routeLength) {
-        this.routeLength = routeLength + " км";
+        this.routeLength = routeLength + " мин";
     }
 
 

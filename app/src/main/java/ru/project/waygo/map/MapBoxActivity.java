@@ -639,10 +639,12 @@ public class MapBoxActivity extends BaseActivity {
             bearings.add(null);
         }
 
-        points.add(origin);
+        List<Point> allPoint = new ArrayList<>();
+        allPoint.add(origin);
+        allPoint.addAll(points);
 
         RouteOptions.Builder builder = RouteOptions.builder()
-                .coordinatesList(points)
+                .coordinatesList(allPoint)
                 .steps(true)
                 .overview(DirectionsCriteria.OVERVIEW_FULL)
                 .alternatives(false)

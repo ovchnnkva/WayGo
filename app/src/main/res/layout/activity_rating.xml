@@ -32,7 +32,7 @@
         android:numStars="5"
         android:progressTint="@color/starts_color"
         android:progressTintMode="src_atop"
-        android:rating="1"
+        android:rating="0"
         android:secondaryProgressTint="@color/starts_color"
         android:stepSize="1.0"
         app:layout_constraintBottom_toBottomOf="parent"
