@@ -169,6 +169,7 @@
             android:hint="@string/search"
             android:maxLines="1"
             android:paddingLeft="15dp"
+            android:textColor="@color/black"
             android:textColorHint="@color/text_gray"
             android:textSize="16sp"
             app:backgroundTint="@color/background_gray"
@@ -177,8 +178,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/search_country_button"
             app:layout_constraintWidth_percent="0.93"
-            app:navigationIconTint="@color/text_gray"
-            app:titleTextColor="@color/text_gray" />
+            app:navigationIconTint="@color/text_gray" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
