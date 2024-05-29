@@ -8,5 +8,5 @@ import lombok.Setter;
 public class ArMetaInfoDTO {
     private String key;
     private String bucketName;
-    private int scale;
+    private float scale;
 }
