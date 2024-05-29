@@ -93,8 +93,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     private ConstraintLayout emptyLayout;
     private ProgressBar loader;
 
-    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
-    });
     @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -225,7 +223,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 List<LocationFragment> locationFragments = isExcursion
                         ? currentRoutes
-                        : getPointsFromExcursion();
+                        : currentPoints;
 
                 if (locationSearch.getText() == null || locationSearch.getText().toString().isBlank()) {
                     fillRecyclePoint(locationFragments);
@@ -287,6 +285,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         editor.apply();
     }
     private List<LocationFragment> filterLocation(List<LocationFragment> locationFragments) {
+        if (locationSearch.getText() == null || locationSearch.getText().toString().isBlank()) return locationFragments;
         return locationFragments
                 .stream()
                 .filter(location -> location.getName()
@@ -331,7 +330,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                                     new LocationFragment(point,
                                             getRoutesExtra(getRoutesFragmentIncludePoint(point))))
                             .collect(Collectors.toList());
-                    getFavoritesPointsIds(currentPoints);
+                    getFavoritesPointsIds();
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
@@ -348,19 +347,19 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         });
     }
 
-    private void getFavoritesPointsIds(List<LocationFragment> points) {
+    private void getFavoritesPointsIds() {
         UserService service = retrofit.createService(UserService.class);
         Call<List<Long>> call = service.getFavoritePointsIds(getUserId());
         call.enqueue(new Callback<List<Long>>() {
             @Override
             public void onResponse(Call<List<Long>> call, Response<List<Long>> response) {
                 if(response.isSuccessful()) {
-                    points.stream()
+                    currentPoints.stream()
                             .filter(p -> response.body().contains(p.getLocationId()))
                             .forEach(p -> p.setFavorite(true));
                 }
                 hideIndicator();
-                fillRecyclePoint(currentPoints);
+                fillRecyclePoint(filterLocation(currentPoints));
             }
 
             @Override
@@ -389,7 +388,7 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
                     currentRoutes = routes.stream()
                             .map(route -> new LocationFragment(route, getPointsExtra(route.getStopsOnRoute())))
                             .collect(Collectors.toList());
-                    getFavoritesRoutesIds(currentRoutes);
+                    getFavoritesRoutesIds();
 
                 } else {
                     Log.i("POINT", "onResponse: " + "404 not found");
@@ -406,19 +405,19 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         });
     }
 
-    private void getFavoritesRoutesIds(List<LocationFragment> routes) {
+    private void getFavoritesRoutesIds() {
         UserService service = retrofit.createService(UserService.class);
         Call<List<Long>> call = service.getFavoriteRoutesIds(getUserId());
         call.enqueue(new Callback<List<Long>>() {
             @Override
             public void onResponse(Call<List<Long>> call, Response<List<Long>> response) {
                 if(response.isSuccessful()) {
-                    routes.stream()
+                    currentRoutes.stream()
                             .filter(p -> response.body().contains(p.getLocationId()))
                             .forEach(p -> p.setFavorite(true));
                 }
                 hideIndicator();
-                fillRecyclePoint(currentRoutes);
+                fillRecyclePoint(filterLocation(currentRoutes));
             }
 
             @Override
@@ -467,18 +466,19 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
     public void onTabSelected(TabLayout.Tab tab) {
         switch (tab.getPosition()) {
             case 0: {
+                fillRecyclePoint(new ArrayList<>());
                 isExcursion = true;
                 showIndicator();
                 if(currentRoutes.isEmpty()) getExcursions();
-                else getFavoritesRoutesIds(currentRoutes);
+                else getFavoritesRoutesIds();
                 break;
             }
             case 1: {
+                fillRecyclePoint(new ArrayList<>());
                 isExcursion = false;
                 showIndicator();
-                currentPoints = getPointsFromExcursion();
                 if (currentPoints.isEmpty()) getPoints();
-                else getFavoritesPointsIds(currentPoints);
+                else getFavoritesPointsIds();
                 break;
             }
         }

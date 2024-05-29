@@ -38,7 +38,7 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHeight_percent="0.94"
+                app:layout_constraintHeight_percent="0.91"
                 app:layout_constraintHorizontal_bias="0.498"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
@@ -198,6 +198,7 @@
             android:layout_marginTop="16dp"
             android:background="@drawable/text_field_background"
             android:drawableLeft="@drawable/search_icon"
+            android:textColor="@color/black"
             android:drawablePadding="5dp"
             android:hint="@string/city_name"
             android:maxLines="1"
@@ -212,7 +213,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.93"
             app:navigationIconTint="@color/text_gray"
-            app:titleTextColor="@color/text_gray" />
+            />
 
         <ListView
             android:id="@+id/city_container"
