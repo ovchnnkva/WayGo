@@ -140,7 +140,7 @@ public class MapBoxActivity extends BaseActivity {
     private boolean isFromRoute;
     private ConstraintLayout layoutPlayer;
     private RetrofitConfiguration retrofit;
-    private String nameARModel = "";
+    private ArMetaInfoDTO arMetaInfoDTO;
 
     private final Runnable updateSongTime = new Runnable() {
         @SuppressLint("DefaultLocale")
@@ -342,7 +342,8 @@ public class MapBoxActivity extends BaseActivity {
             arButton.setOnClickListener(view -> {
                 if(checkPermissions()) {
                     Intent intent = new Intent(this, ArActivity.class);
-                    intent.putExtra("model", nameARModel);
+                    intent.putExtra("model", arMetaInfoDTO.getKey());
+                    intent.putExtra("scale", arMetaInfoDTO.getScale());
                     startActivity(intent);
                 } else {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
@@ -370,17 +371,17 @@ public class MapBoxActivity extends BaseActivity {
             @Override
             public void onResponse(Call<ArMetaInfoDTO> call, Response<ArMetaInfoDTO> response) {
                 if(response.isSuccessful()) {
-                    nameARModel = response.body().getKey();
+                    arMetaInfoDTO = response.body();
                     arButton.setVisibility(View.VISIBLE);
                 } else {
-                    nameARModel = "";
+                    arMetaInfoDTO = new ArMetaInfoDTO();
                     arButton.setVisibility(View.INVISIBLE);
                 }
             }
 
             @Override
             public void onFailure(Call<ArMetaInfoDTO> call, Throwable t) {
-                nameARModel = "";
+                arMetaInfoDTO = new ArMetaInfoDTO();
                 arButton.setVisibility(View.INVISIBLE);
             }
         });

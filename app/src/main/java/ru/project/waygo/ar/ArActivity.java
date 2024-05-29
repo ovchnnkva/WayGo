@@ -109,11 +109,14 @@ public class ArActivity extends BaseActivity {
     List<AnchorNode> nodeList = new ArrayList<>();
 
     Session session;
+    Config config;
     private DownloaadConfirmDialogActivity dialog;
     private ProgressDialog progressDialog;
 
     private boolean isPlaced;
     private boolean isFixed;
+
+    private float scale ;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -141,6 +144,7 @@ public class ArActivity extends BaseActivity {
         retrofit = new RetrofitConfiguration();
 
         Intent intent = getIntent();
+        scale = intent.getFloatExtra("scale",0);
         String nameModel = intent.getStringExtra("model");
         String[] parts = nameModel.split("\\.");
         long id = 1l;
@@ -158,7 +162,7 @@ public class ArActivity extends BaseActivity {
                 throw new RuntimeException(e);
             }
             try {
-                buildModel(file);
+                buildModel(file,scale);
                 Toast.makeText(getApplicationContext(),"Ok!",Toast.LENGTH_SHORT).show();
                 return;
             } catch (IOException e) {
@@ -188,33 +192,35 @@ public class ArActivity extends BaseActivity {
     }
 
 
-    private void buildModel(File file) throws IOException {
+    private void buildModel(File file, float scale) throws IOException {
         ArFragment arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         arFragment.setMenuVisibility(true);
+        
 
         ModelRenderable.builder().setSource(this,
                 RenderableSource.builder().setSource(this, Uri.parse(file.getPath()),
-                        RenderableSource.SourceType.GLB).setScale(10).build()).build().thenAccept(renderable -> {
+                        RenderableSource.SourceType.GLB).setScale(scale).build()).build().thenAccept(renderable -> {
             lampPostRenderable = renderable;
-            copy = lampPostRenderable.makeCopy();
-            copy.getMaterial().setFloat3("baseColorTint",
-                    new Color(android.graphics.Color.rgb(128, 128, 128)));
-            ;
         });
         arFragment.setOnTapArPlaneListener((HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
-
             if (lampPostRenderable == null) {
                 return;
             }
+
+            if(nodeList.size() == 1){
+                return;
+            }
+
             Anchor anchor = hitResult.createAnchor();
             AnchorNode anchorNode = new AnchorNode(anchor);
             anchorNode.setParent(arFragment.getArSceneView().getScene());
             nodeList.add(anchorNode);
 
             TransformableNode lamp = new TransformableNode(arFragment.getTransformationSystem());
-            lamp.getScaleController().setMaxScale(15f);
+            lamp.getScaleController().setMaxScale(100f);
+
             lamp.setParent(anchorNode);
-            lamp.setRenderable(copy);
+            lamp.setRenderable(lampPostRenderable);
             lamp.select();
             Frame frame = arFragment.getArSceneView().getArFrame();
             Camera camera = frame.getCamera();
@@ -228,6 +234,7 @@ public class ArActivity extends BaseActivity {
 
             arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
                 if (isFixed) {
+                    Log.i("arr", "buildModel: ");
                     return;
                 }
                 float tx = camera.getPose().tx();
@@ -249,20 +256,29 @@ public class ArActivity extends BaseActivity {
             for (Node node : nodeList) {
                 scene.removeChild(node);
             }
+            nodeList = new ArrayList<>();
+            isFixed = false;
         });
         fixButton = findViewById(R.id.button_fix);
         fixButton.setOnClickListener(s -> {
+            Config configTemp = new Config(session);
             if (isFixed == true) {
+                arFragment.getArSceneView().getScene().getView();
+                configTemp.setPlaneFindingMode(Config.PlaneFindingMode.HORIZONTAL);
+                session.configure(configTemp);
                 isFixed = false;
                 return;
             }
+            arFragment.getPlaneDiscoveryController().hide();
+            configTemp.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
+            session.configure(configTemp);
             isFixed = true;
         });
     }
 
     public void createSession() throws UnavailableDeviceNotCompatibleException, UnavailableSdkTooOldException, UnavailableArcoreNotInstalledException, UnavailableApkTooOldException, CameraNotAvailableException {
         session = new Session(this);
-        Config config = new Config(session);
+        config = new Config(session);
         config.setInstantPlacementMode(Config.InstantPlacementMode.LOCAL_Y_UP);
         session.configure(config);
     }
@@ -287,7 +303,7 @@ public class ArActivity extends BaseActivity {
                             Toast.makeText(ArActivity.this, "OK!", Toast.LENGTH_SHORT).show();
                             try {
                                 CacheUtils.cacheObjectFiles(getApplicationContext(),name, Files.readAllBytes(Paths.get(localFile.getPath())));
-                                buildModel(localFile);
+                                buildModel(localFile,scale);
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }
