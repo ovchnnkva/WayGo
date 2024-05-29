@@ -9,4 +9,8 @@
         <item name="android:textColorHint">@color/text_gray</item>
         <item name="colorControlNormal">@color/stroke_gray</item>
     </style>
+
+    <style name="ListFont" parent="@android:style/Widget.ListView">
+        <item name="android:textColor">@color/black</item>
+    </style>
 </resources>

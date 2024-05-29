@@ -19,10 +19,12 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -303,17 +305,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         cityListView.setVisibility(View.VISIBLE);
     }
 
-    private List<LocationFragment> getPointsFromExcursion() {
-        Set<PointDTO> points = new HashSet<>();
-
-        currentRoutes.forEach(route -> points.addAll(route.getPoints()));
-        return points.stream()
-                .map(point ->
-                        new LocationFragment(point,
-                        getRoutesExtra(getRoutesFragmentIncludePoint(point))))
-                .collect(Collectors.toList());
-    }
-
     private void getPoints() {
         PointService pointService = retrofit.createService(PointService.class);
 
@@ -456,8 +447,6 @@ public class HomeActivity extends BaseActivity implements TabLayout.OnTabSelecte
         cacheFiles(HomeActivity.this, getFileName(type, id), image);
     }
     private void fillCityContainer(List<String> cities) {
-        Log.i("CITIES", "fillCityContainer: size " + cities.size());
-        Log.i("CITIES", "visivle " + (cityListView.getVisibility() == View.VISIBLE));
         cityAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, cities);
         cityListView.setAdapter(cityAdapter);
     }
