@@ -336,8 +336,8 @@ public class ArActivity extends BaseActivity {
     }
 
     private void saveBitmapToDisk(Bitmap bitmap, String filename) throws IOException {
-
-        File out = new File(filename);
+        File appDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File out = new File(appDir, filename);
         if (!out.getParentFile().exists()) {
             out.getParentFile().mkdirs();
         }
@@ -356,7 +356,6 @@ public class ArActivity extends BaseActivity {
         /*ArSceneView view = fragment.getArSceneView();*/
         ArFragment arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         ArSceneView mSurfaceView = arFragment.getArSceneView();
-        ;
         // Create a bitmap the size of the scene view.
         final Bitmap bitmap = Bitmap.createBitmap(mSurfaceView.getWidth(), mSurfaceView.getHeight(), Bitmap.Config.ARGB_8888);
 

@@ -35,20 +35,20 @@
 
         <TextView
             android:id="@+id/name_location"
-            android:layout_width="wrap_content"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="@string/test_location_name"
             android:textColor="@color/black"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.079"
+            app:layout_constraintHorizontal_bias="0.478"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/image" />
 
         <TextView
             android:id="@+id/descriprion"
-            android:layout_width="285dp"
+            android:layout_width="320dp"
             android:layout_height="46dp"
             android:maxLines="3"
             android:text="@string/test_location_description"
@@ -56,10 +56,10 @@
             android:textSize="12sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.275"
+            app:layout_constraintHorizontal_bias="0.478"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/name_location"
-            app:layout_constraintVertical_bias="0.687" />
+            app:layout_constraintVertical_bias="0.375" />
 
         <ToggleButton
             android:id="@+id/toggle_favorite"

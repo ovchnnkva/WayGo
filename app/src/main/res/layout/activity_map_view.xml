@@ -201,8 +201,8 @@
 
             <TextView
                 android:id="@+id/descriprion_point"
-                android:layout_width="match_parent"
-                android:layout_height="71dp"
+                android:layout_width="350dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:textAlignment="textStart"
                 android:textColor="@color/text_gray"

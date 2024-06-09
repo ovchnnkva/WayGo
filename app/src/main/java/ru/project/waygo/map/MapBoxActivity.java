@@ -22,6 +22,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
@@ -346,8 +347,9 @@ public class MapBoxActivity extends BaseActivity {
                     intent.putExtra("scale", arMetaInfoDTO.getScale());
                     startActivity(intent);
                 } else {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 1);
+                   launchPermissions();
                 }
+                Log.i("PERMISSION", "onCreate: " + checkPermissions());
             });
 
             locationComponentPlugin.addOnIndicatorPositionChangedListener(point -> {
@@ -356,12 +358,37 @@ public class MapBoxActivity extends BaseActivity {
             });
         });
     }
-    
+
     private boolean checkPermissions() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        boolean notificationPermission = true;
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission = (ActivityCompat.checkSelfPermission(this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+            Log.i("PERMISSION", "checkPermissions: WRITE_EXTERNAL_STORAGE check");
+        }
+        return notificationPermission
+                && (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED);
 
     }
 
+    private void launchPermissions() {
+        String[] permissions = {
+                Manifest.permission.CAMERA
+        };
+
+        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
+            permissions = new String[]{
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA
+            };
+        }
+
+        ActivityCompat.requestPermissions(
+                this,
+                permissions,
+                1
+        );
+    }
 
     private void getARModel(long pointId) {
         PointService pointService = retrofit.createService(PointService.class);
