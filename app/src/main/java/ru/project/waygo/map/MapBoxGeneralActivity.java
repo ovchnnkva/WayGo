@@ -4,9 +4,13 @@ import static com.mapbox.maps.plugin.animation.CameraAnimationsUtils.getCamera;
 import static com.mapbox.maps.plugin.gestures.GesturesUtils.getGestures;
 import static com.mapbox.maps.plugin.locationcomponent.LocationComponentUtils.getLocationComponent;
 import static com.mapbox.navigation.base.extensions.RouteOptionsExtensions.applyDefaultNavigationOptions;
+import static ru.project.waygo.utils.Base64Util.stringToByte;
+import static ru.project.waygo.utils.BitMapUtils.getBitmapFromBytes;
 import static ru.project.waygo.utils.BitMapUtils.getBitmapFromDrawable;
 import static ru.project.waygo.Constants.AUTH_FILE_NAME;
 import static ru.project.waygo.Constants.CITY_USER_AUTH_FILE;
+import static ru.project.waygo.utils.CacheUtils.getFileCache;
+import static ru.project.waygo.utils.CacheUtils.getFileName;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -21,6 +25,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -70,8 +76,11 @@ import com.mapbox.navigation.ui.maps.route.line.api.MapboxRouteLineView;
 import com.mapbox.navigation.ui.maps.route.line.model.MapboxRouteLineOptions;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineColorResources;
 import com.mapbox.navigation.ui.maps.route.line.model.RouteLineResources;
+import com.smarteist.autoimageslider.SliderView;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -81,6 +90,8 @@ import lombok.var;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import ru.project.waygo.adapter.SliderAdapter;
+import ru.project.waygo.fragment.SliderFragment;
 import ru.project.waygo.user_profile.UserProfileActivity;
 import ru.project.waygo.BaseActivity;
 import ru.project.waygo.R;
@@ -101,6 +112,12 @@ public class MapBoxGeneralActivity extends BaseActivity {
     private BottomNavigationView bottomNavigationView;
     private RetrofitConfiguration retrofit;
     private ProgressBar loader;
+    private ScrollView pointLayout;
+    private TextView pointName;
+    private TextView pointDescription;
+    private SliderView slider;
+
+    private List<PointDTO> pointDTOS;
     private final LocationObserver locationObserver = new LocationObserver() {
         @Override
         public void onNewRawLocation(@NonNull Location location) {
@@ -174,6 +191,14 @@ public class MapBoxGeneralActivity extends BaseActivity {
         focusLocationBtn = findViewById(R.id.focusLocation);
         bottomNavigationView = findViewById(R.id.navigation_bar_map);
         loader = findViewById(R.id.loading);
+        pointLayout = findViewById(R.id.scroll_general);
+        pointName = findViewById(R.id.name_point);
+        pointDescription = findViewById(R.id.descriprion_point);
+        slider = findViewById(R.id.slider_map);
+        slider.setAutoCycleDirection(SliderView.LAYOUT_DIRECTION_LTR);
+        slider.setScrollTimeInSec(4);
+        slider.setAutoCycle(true);
+        slider.startAutoCycle();
 
         retrofit = new RetrofitConfiguration();
 
@@ -264,18 +289,22 @@ public class MapBoxGeneralActivity extends BaseActivity {
 
     private void getPoints() {
         PointService pointService = retrofit.createService(PointService.class);
-        Call<List<PointDTO>> call = pointService.getCoordinatesByCityName(getCity());
+        Call<List<PointDTO>> call = pointService.getByCity(getCity());
+        showIndicator();
         call.enqueue(new Callback<List<PointDTO>>() {
             @Override
             public void onResponse(@NonNull Call<List<PointDTO>> call, @NonNull Response<List<PointDTO>> response) {
                 if(response.isSuccessful()) {
-                    createPoints(response.body());
+                    pointDTOS = response.body();
+                    createPoints();
                 }
+                hideIndicator();
             }
 
             @Override
             public void onFailure(@NonNull Call<List<PointDTO>> call, @NonNull Throwable t) {
                 Log.i("POINT", "onFailure " + t.getLocalizedMessage());
+                hideIndicator();
             }
         });
     }
@@ -285,18 +314,20 @@ public class MapBoxGeneralActivity extends BaseActivity {
         return preferences.getString(CITY_USER_AUTH_FILE, "");
     }
 
-    private void createPoints(List<PointDTO> pointsDto) {
+    private void createPoints() {
         Bitmap bitmap = getBitmapFromDrawable(getApplicationContext(), R.drawable.dot_icon);
         AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
         PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, mapView);
         pointAnnotationManager.addClickListener(pointAnnotation -> {
+            pointLayout.setVisibility(View.GONE);
             List<Point> points = new ArrayList<>();
             points.add(pointAnnotation.getPoint());
             fetchRoute(points);
+            createPointCard(findDtoByCoordinates(pointAnnotation.getPoint()));
             return true;
         });
 
-        List<Point> points = pointsDto.stream()
+        List<Point> points = pointDTOS.stream()
                 .map(p -> Point.fromLngLat(Objects.requireNonNull(p).getLongitude(), p.getLatitude()))
                 .collect(Collectors.toList());
         pointAnnotationManager.deleteAll();
@@ -308,6 +339,41 @@ public class MapBoxGeneralActivity extends BaseActivity {
                     .withPoint(p);
             pointAnnotationManager.create(pointAnnotationOptions);
         });
+    }
+
+    private PointDTO findDtoByCoordinates(Point point) {
+        Log.i("FIND_POINT", "findDtoByCoordinates: "+ point.latitude() + ";" + point.longitude());
+        return pointDTOS.stream()
+                .filter(dto -> (point.latitude() == dto.getLatitude()) && (point.longitude() == dto.getLongitude()))
+                .findFirst().orElse(null);
+    }
+
+    private void createPointCard(PointDTO dto) {
+        if(dto == null) return;
+        pointLayout.setVisibility(View.VISIBLE);
+        pointName.setText(dto.getPointName());
+        pointDescription.setText(dto.getDescription());
+        fillSlider(getPointAllImages(dto)
+                .stream()
+                .map(SliderFragment::new)
+                .collect(Collectors.toList()));
+        Log.i("VISIBILITY", "createPointCard: " + pointLayout.getVisibility());
+    }
+
+    private void fillSlider(List<SliderFragment> fragments) {
+        SliderAdapter adapter = new SliderAdapter(MapBoxGeneralActivity.this, fragments);
+        slider.setSliderAdapter(adapter);
+    }
+
+    private List<Bitmap> getPointAllImages(PointDTO dto) {
+        if(!dto.getPhoto().isEmpty()) {
+            return dto.getPhoto()
+                    .stream()
+                    .map(s -> getBitmapFromBytes(stringToByte(s)))
+                    .collect(Collectors.toList());
+        }
+
+        return List.of(getBitmapFromDrawable(getApplicationContext(), R.drawable.location_test));
     }
 
     @SuppressLint("MissingPermission")
@@ -349,11 +415,13 @@ public class MapBoxGeneralActivity extends BaseActivity {
                     public void onRoutesReady(@NonNull List<NavigationRoute> list, @NonNull RouterOrigin routerOrigin) {
                         mapboxNavigation.setNavigationRoutes(list);
                         focusLocationBtn.performClick();
+                        hideIndicator();
                     }
 
                     @Override
                     public void onFailure(@NonNull List<RouterFailure> list, @NonNull RouteOptions routeOptions) {
                         Toast.makeText(MapBoxGeneralActivity.this, "Route request failed", Toast.LENGTH_SHORT).show();
+                        hideIndicator();
                     }
 
                     @Override

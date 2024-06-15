@@ -360,28 +360,13 @@ public class MapBoxActivity extends BaseActivity {
     }
 
     private boolean checkPermissions() {
-        boolean notificationPermission = true;
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            notificationPermission = (ActivityCompat.checkSelfPermission(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
-            Log.i("PERMISSION", "checkPermissions: WRITE_EXTERNAL_STORAGE check");
-        }
-        return notificationPermission
-                && (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED);
-
+        return (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED);
     }
 
     private void launchPermissions() {
         String[] permissions = {
                 Manifest.permission.CAMERA
         };
-
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
-            permissions = new String[]{
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA
-            };
-        }
 
         ActivityCompat.requestPermissions(
                 this,
